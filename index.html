@@ -1,0 +1,1099 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Valongo Roleplay - Tableau de Bord Dev</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400&display=swap">
+<style>
+:root{--bg:#0a0d14;--card:#121824;--side:#0e131d;--primary:#1e60ff;--glow:rgba(30,96,255,.35);--hover:#3b76ff;--text:#f1f5f9;--muted:#94a3b8;--border:#1e293b;--cours:#f59e0b;--fini:#10b981;--nouveau:#3b82f6;--opti:#8b5cf6;--discord:#5865f2}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:Inter,system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;overflow-x:hidden}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+[hidden]{display:none!important}
+:focus-visible{outline:2px solid var(--primary);outline-offset:2px}
+.muted{color:var(--muted);font-size:13px}
+
+/* Sidebar */
+aside{width:280px;background:var(--side);border-right:1px solid var(--border);display:flex;flex-direction:column;padding:24px;position:fixed;inset:0 auto 0 0;z-index:100}
+.brand{display:flex;align-items:center;gap:16px;margin-bottom:36px}
+.logo{width:46px;height:46px;background:linear-gradient(135deg,#1e60ff,#0038b8);border-radius:12px;display:grid;place-items:center;color:#fff;box-shadow:0 0 20px var(--glow)}
+.brand h1{font-size:18px;font-weight:800;letter-spacing:.5px;text-transform:uppercase}
+.brand span{font-size:11px;color:var(--primary);font-weight:700;letter-spacing:2px}
+nav{display:flex;flex-direction:column;gap:8px;flex:1}
+.nav-btn{display:flex;align-items:center;gap:14px;width:100%;padding:12px 16px;border:0;border-radius:10px;background:transparent;color:var(--muted);font-size:14px;font-weight:500;text-align:left;transition:.2s}
+.nav-btn:hover,.nav-btn.active{color:#fff;background:rgba(30,96,255,.12)}
+.nav-btn.active{color:var(--primary);font-weight:600;border-left:3px solid var(--primary);border-radius:0 10px 10px 0}
+.nav-btn i{font-size:18px;width:20px}
+.dev-badge{display:flex;align-items:center;gap:12px;padding:14px;background:var(--card);border:1px solid var(--border);border-radius:12px}
+.dev-avatar{width:38px;height:38px;background:var(--border);border-radius:50%;display:grid;place-items:center;color:var(--primary)}
+
+/* Main */
+main{margin-left:280px;flex:1;min-width:0;max-width:1400px;padding:32px 40px}
+header{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:24px}
+header h2{font-size:26px;font-weight:800}
+header p{color:var(--muted);font-size:14px;margin-top:4px}
+#clock{font-family:'JetBrains Mono',monospace;color:var(--muted);font-size:14px}
+.banner{border-radius:16px;overflow:hidden;margin-bottom:32px;border:1px solid var(--border);box-shadow:0 8px 24px rgba(0,0,0,.4);background:#0c121e}
+.banner:has(img[hidden]){display:none}
+.banner img{width:100%;height:auto;display:block}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:20px;margin-bottom:32px}
+.stat{display:flex;align-items:center;gap:16px;padding:20px;background:var(--card);border:1px solid var(--border);border-radius:14px}
+.stat-icon{width:48px;height:48px;border-radius:12px;display:grid;place-items:center;font-size:22px}
+.stat .num{font-size:24px;font-weight:800}
+.stat .label{font-size:12px;color:var(--muted);font-weight:500}
+.grid{display:grid;grid-template-columns:1fr 380px;gap:32px}
+
+/* Cards & forms */
+.card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:24px;margin-bottom:32px}
+.card-header{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:20px;padding-bottom:12px;border-bottom:1px solid var(--border)}
+.card-title{font-size:16px;font-weight:700;display:flex;align-items:center;gap:10px}
+.card-title i{color:var(--primary)}
+.form-group{margin-bottom:18px}
+.form-label{display:block;font-size:13px;font-weight:600;margin-bottom:8px;color:#cbd5e1}
+.form-control,.form-select{width:100%;padding:12px 14px;background:var(--bg);border:1px solid var(--border);border-radius:10px;font-size:14px;transition:.2s}
+.form-control:focus,.form-select:focus{outline:0;border-color:var(--primary);box-shadow:0 0 0 3px var(--glow)}
+textarea.form-control{resize:vertical;min-height:100px}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.label-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.label-row .form-label{margin:0}
+.type-selector,.filter-tabs{display:flex;gap:10px;margin-bottom:12px}
+.filter-tabs{gap:6px;margin-bottom:8px}
+.type-btn{flex:1;display:flex;align-items:center;justify-content:center;gap:8px;padding:10px;border-radius:8px;border:1px solid var(--border);background:var(--bg);color:var(--muted);font-size:13px;font-weight:600;transition:.2s}
+.type-btn.active{background:var(--primary);border-color:var(--primary);color:#fff}
+.chip{padding:4px 10px;border-radius:6px;font-size:11px;background:var(--bg);border:1px solid var(--border);color:var(--muted);transition:.2s}
+.chip.active,.chip:hover{background:var(--primary);border-color:var(--primary);color:#fff}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;padding:12px 20px;border:0;border-radius:10px;font-size:14px;font-weight:600;color:#fff;transition:.2s}
+.btn-primary{background:linear-gradient(135deg,var(--primary),#1d4ed8);box-shadow:0 4px 14px var(--glow);width:100%}
+.btn-primary:hover{background:linear-gradient(135deg,var(--hover),var(--primary));transform:translateY(-1px)}
+.btn-discord{background:var(--discord);width:100%;margin-top:16px}
+.btn-discord:hover{background:#4752c4}
+.btn-sm{width:auto;padding:8px 14px}
+.btn-secondary{padding:6px 10px;font-size:11px;border-radius:6px;background:var(--border);border:1px solid var(--border);color:#fff}
+.btn-secondary:hover{background:#334155}
+.btn-secondary.danger:hover{background:#ef4444}
+.search-box{position:relative;margin-bottom:12px}
+.search-box i{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--muted)}
+.search-box input{padding-left:40px}
+
+/* Patches */
+.patch-item{position:relative;padding:16px;margin-bottom:14px;background:rgba(10,13,20,.6);border:1px solid var(--border);border-radius:12px;transition:.2s}
+.patch-item:hover{transform:translateX(4px);border-color:#334155}
+.patch-header{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:8px}
+.patch-script{font-weight:700;font-size:15px}
+.tag{color:var(--primary);font-size:12px;font-weight:600}
+.badge{padding:4px 10px;border-radius:20px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;white-space:nowrap;border:1px solid}
+.badge-cours{background:rgba(245,158,11,.15);color:var(--cours)}
+.badge-fini{background:rgba(16,185,129,.15);color:var(--fini)}
+.badge-nouveau{background:rgba(59,130,246,.15);color:var(--nouveau)}
+.badge-opti{background:rgba(139,92,246,.15);color:var(--opti)}
+.avail{font-size:12px;font-weight:600;color:var(--fini);margin-bottom:8px}
+.patch-desc{font-size:13px;color:#cbd5e1;margin-bottom:12px;white-space:pre-line;line-height:1.5;overflow-wrap:anywhere}
+.patch-footer{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:11px;color:var(--muted);border-top:1px solid rgba(255,255,255,.05);padding-top:8px}
+.patch-dev{display:flex;align-items:center;gap:6px;color:var(--primary);font-weight:600}
+
+/* Catalogue */
+.script-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px;max-height:600px;overflow-y:auto;padding-right:6px}
+.script-card{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:14px;background:var(--bg);border:1px solid var(--border);border-radius:10px}
+.script-name{font-weight:600;font-size:13px;overflow-wrap:anywhere}
+.script-author{font-size:11px;color:var(--muted)}
+
+/* Aperçu Discord */
+.discord-preview{background:#2f3136;border-radius:8px;padding:16px;border-left:4px solid var(--primary);overflow:hidden}
+.discord-bot{font-size:11px;color:#b9bbbe;font-weight:700;margin-bottom:8px}
+.discord-title{color:#fff;font-weight:700;font-size:14px;margin-bottom:6px}
+.discord-field{margin-top:8px;font-size:12px}
+.discord-field-name{color:#b9bbbe;font-weight:600;text-transform:uppercase;font-size:10px}
+.discord-field-val{color:#dcddde;margin-top:2px;white-space:pre-line;overflow-wrap:anywhere}
+.discord-preview img{width:100%;border-radius:6px;margin-top:12px;display:block}
+
+.tab-content{display:none}
+.tab-content.active{display:block}
+
+/* Dialogs & toast */
+dialog{margin:auto;width:400px;max-width:90%;padding:24px;background:var(--card);color:var(--text);border:1px solid var(--border);border-radius:14px}
+dialog::backdrop{background:rgba(0,0,0,.7)}
+.dlg-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+.dlg-head h3{font-size:16px}
+.dlg-head button{background:none;border:0;color:var(--muted);font-size:16px}
+.dev-list{max-height:200px;overflow-y:auto;margin-bottom:16px}
+.dev-item{display:flex;justify-content:space-between;align-items:center;padding:8px 12px;margin-bottom:8px;background:var(--bg);border:1px solid var(--border);border-radius:8px;font-size:13px;font-weight:600}
+.row{display:flex;gap:6px}
+#toast{position:fixed;right:24px;bottom:24px;max-width:360px;padding:12px 16px;background:var(--card);border:1px solid var(--fini);border-radius:10px;font-size:13px;opacity:0;transform:translateY(10px);pointer-events:none;transition:.25s;z-index:2000}
+#toast.show{opacity:1;transform:none}
+#toast.err{border-color:#ef4444}
+
+@media(max-width:1100px){.grid{grid-template-columns:1fr}}
+@media(max-width:900px){
+  body{flex-direction:column}
+  aside{position:static;width:100%;padding:16px}
+  .brand{margin-bottom:16px}
+  nav{flex-direction:row;flex-wrap:wrap}
+  .nav-btn{width:auto}
+  .dev-badge{display:none}
+  main{margin-left:0;padding:20px 16px}
+  .form-row{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<aside>
+  <div class="brand">
+    <div class="logo"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4l7 16 9-16"/></svg></div>
+    <div><h1>Valongo RP</h1><span>DEVELOPMENT</span></div>
+  </div>
+  <nav>
+    <button class="nav-btn active" data-tab="patchs"><i class="fa-solid fa-code-commit"></i> Patch Notes</button>
+    <button class="nav-btn" data-tab="catalogue"><i class="fa-solid fa-boxes-stacked"></i> Catalogue Assets</button>
+    <button class="nav-btn" data-tab="settings"><i class="fa-solid fa-gears"></i> Webhook Discord</button>
+  </nav>
+  <div class="dev-badge">
+    <div class="dev-avatar"><i class="fa-solid fa-user-gear"></i></div>
+    <div><div id="devName" style="font-size:13px;font-weight:700">Mendestoss</div><div class="muted" style="font-size:11px">Lead Dev USA RP</div></div>
+  </div>
+</aside>
+
+<main>
+  <header>
+    <div><h2>Gestionnaire de Mises à Jour</h2><p>Base USA Realistic - Valongo Server Dashboard</p></div>
+    <div id="clock"></div>
+  </header>
+
+  <div class="banner"><img class="js-banner" alt="Valongo Patch Notes Banner" referrerpolicy="no-referrer"></div>
+
+  <div class="stats">
+    <div class="stat"><div class="stat-icon" style="background:rgba(30,96,255,.1);color:var(--primary)"><i class="fa-solid fa-cubes"></i></div><div><div class="num" id="statAssets">0</div><div class="label">Assets Keymaster</div></div></div>
+    <div class="stat"><div class="stat-icon" style="background:rgba(16,185,129,.1);color:var(--fini)"><i class="fa-solid fa-circle-check"></i></div><div><div class="num" id="statDone">0</div><div class="label">Correctifs Terminés</div></div></div>
+    <div class="stat"><div class="stat-icon" style="background:rgba(245,158,11,.1);color:var(--cours)"><i class="fa-solid fa-spinner"></i></div><div><div class="num" id="statPending">0</div><div class="label">En cours de dev</div></div></div>
+  </div>
+
+  <!-- PATCH NOTES -->
+  <section id="tab-patchs" class="tab-content active">
+    <div class="grid">
+      <div>
+        <div class="card">
+          <div class="card-header"><div class="card-title"><i class="fa-solid fa-pen-to-square"></i> Nouveau Patch Note / Modification</div></div>
+          <form id="patchForm">
+            <div class="form-group">
+              <label class="form-label">Type d'Asset pour l'affichage Discord</label>
+              <div class="type-selector">
+                <button type="button" class="type-btn active" data-type="Script"><i class="fa-solid fa-code"></i> Script</button>
+                <button type="button" class="type-btn" data-type="Mapping"><i class="fa-solid fa-map-location-dot"></i> Mapping</button>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="formSearch"><i class="fa-solid fa-magnifying-glass"></i> Rechercher un Script ou Mapping</label>
+              <div class="search-box">
+                <i class="fa-solid fa-search"></i>
+                <input type="search" class="form-control" id="formSearch" placeholder="Tapez pour filtrer (ex: Quasar, Housing, Energy, MLO...)" autocomplete="off">
+              </div>
+              <div class="filter-tabs">
+                <button type="button" class="chip active" data-cat="all">Tous</button>
+                <button type="button" class="chip" data-cat="script">Scripts</button>
+                <button type="button" class="chip" data-cat="map">Mappings / MLO</button>
+              </div>
+              <select class="form-select" id="patchAsset" required aria-label="Asset"></select>
+            </div>
+            <div class="form-row">
+              <div class="form-group"><label class="form-label" for="patchStatus">Statut du travail</label><select class="form-select" id="patchStatus" required></select></div>
+              <div class="form-group">
+                <div class="label-row"><label class="form-label" for="patchDev">Développeur</label><button type="button" class="btn-secondary" id="openDevs"><i class="fa-solid fa-gear"></i> Gérer Devs</button></div>
+                <select class="form-select" id="patchDev" required></select>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="patchAvail">Disponibilité</label>
+              <select class="form-select" id="patchAvail"></select>
+              <input type="text" class="form-control" id="patchAvailCustom" placeholder="Ex: Après la maintenance de samedi" maxlength="80" style="margin-top:8px" hidden>
+            </div>
+            <div class="form-group"><label class="form-label" for="patchDate">Date et Heure (Automatique)</label><input type="text" class="form-control" id="patchDate" readonly style="opacity:.7"></div>
+            <div class="form-group"><label class="form-label" for="patchReason">Description / Détails des modifications</label><textarea class="form-control" id="patchReason" required maxlength="1000" placeholder="Ex: Correction du bug d'inventaire, traduction des peds en US, optimisation des FPS..."></textarea></div>
+            <button type="submit" class="btn btn-primary"><i class="fa-solid fa-paper-plane"></i> Publier &amp; Envoyer au Webhook Discord</button>
+          </form>
+        </div>
+        <div class="card">
+          <div class="card-header"><div class="card-title"><i class="fa-solid fa-clock-rotate-left"></i> Historique des Modifications</div></div>
+          <div id="patchList"></div>
+        </div>
+      </div>
+      <div>
+        <div class="card" style="position:sticky;top:32px">
+          <div class="card-header"><div class="card-title"><i class="fa-brands fa-discord"></i> Aperçu Discord Embed</div></div>
+          <div class="discord-preview">
+            <div class="discord-bot">VALONGO BOT</div>
+            <div class="discord-title">🛠️ PATCH NOTE - VALONGO USA</div>
+            <div style="font-size:12px;color:#dcddde"><b id="prevType">Script: </b><span id="prevName"></span></div>
+            <div class="discord-field"><div class="discord-field-name">STATUT</div><div class="discord-field-val" id="prevStatus"></div></div>
+            <div class="discord-field" id="prevAvailBox"><div class="discord-field-name">DISPONIBILITÉ</div><div class="discord-field-val" id="prevAvail"></div></div>
+            <div class="discord-field"><div class="discord-field-name">DÉTAILS / RAISONS</div><div class="discord-field-val" id="prevReason"></div></div>
+            <div class="discord-field"><div class="discord-field-name">DÉVELOPPEUR &amp; DATE</div><div class="discord-field-val" id="prevFooter"></div></div>
+            <img class="js-banner" alt="Bannière Discord" referrerpolicy="no-referrer">
+          </div>
+          <button type="button" class="btn btn-discord" id="copyBtn"><i class="fa-solid fa-copy"></i> Copier le texte brut Discord</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CATALOGUE -->
+  <section id="tab-catalogue" class="tab-content">
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title"><i class="fa-solid fa-boxes-stacked"></i> Catalogue complet de vos Assets Keymaster <span class="muted" id="catCount"></span></div>
+        <button type="button" class="btn btn-primary btn-sm" id="openAsset"><i class="fa-solid fa-plus"></i> Ajouter un Asset</button>
+      </div>
+      <div class="search-box">
+        <i class="fa-solid fa-magnifying-glass"></i>
+        <input type="search" class="form-control" id="catSearch" placeholder="Rechercher dans la liste globale (ex: Quasar, Housing, Police, Energy...)" autocomplete="off">
+      </div>
+      <div class="script-grid" id="catGrid"></div>
+    </div>
+  </section>
+
+  <!-- PARAMÈTRES -->
+  <section id="tab-settings" class="tab-content">
+    <div class="card" style="max-width:600px">
+      <div class="card-header"><div class="card-title"><i class="fa-brands fa-discord"></i> Configuration Webhook Discord &amp; Paramètres</div></div>
+      <div class="form-group">
+        <label class="form-label" for="hookInput">URL du Webhook Discord (Salon Patch Notes)</label>
+        <input type="url" class="form-control" id="hookInput" placeholder="https://discord.com/api/webhooks/..." autocomplete="off">
+        <span class="muted" style="font-size:11px;margin-top:6px;display:block">Le webhook est enregistré localement sur votre navigateur.</span>
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="bannerInput">URL de l'Image de Bannière Discord Embed</label>
+        <input type="url" class="form-control" id="bannerInput" placeholder="https://...">
+      </div>
+    </div>
+  </section>
+</main>
+
+<!-- Gestion des développeurs -->
+<dialog id="devDlg">
+  <div class="dlg-head"><h3>Gérer l'équipe de développement</h3><button type="button" data-close aria-label="Fermer"><i class="fa-solid fa-xmark"></i></button></div>
+  <div class="dev-list" id="devList"></div>
+  <form id="devForm" class="row">
+    <input class="form-control" id="devInput" placeholder="Nom du développeur" required maxlength="40" autocomplete="off">
+    <button class="btn btn-primary" style="width:auto;padding:8px 14px" aria-label="Ajouter"><i class="fa-solid fa-plus"></i></button>
+  </form>
+</dialog>
+
+<!-- Ajout d'asset -->
+<dialog id="assetDlg">
+  <div class="dlg-head"><h3>Ajouter un Asset</h3><button type="button" data-close aria-label="Fermer"><i class="fa-solid fa-xmark"></i></button></div>
+  <form id="assetForm">
+    <div class="form-group"><label class="form-label" for="aName">Nom de l'asset / script</label><input class="form-control" id="aName" required maxlength="100" autocomplete="off"></div>
+    <div class="form-group"><label class="form-label" for="aAuthor">Créateur</label><input class="form-control" id="aAuthor" value="Perso" maxlength="60" autocomplete="off"></div>
+    <div class="form-group"><label class="form-label" for="aType">Type</label><select class="form-select" id="aType"><option value="script">Script</option><option value="map">Mapping / MLO</option></select></div>
+    <button class="btn btn-primary"><i class="fa-solid fa-plus"></i> Ajouter</button>
+  </form>
+</dialog>
+
+<div id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(() => {
+'use strict';
+
+/* ---------- Données : [créateur, nom, type] (s = script, m = mapping) ---------- */
+const RAW = [
+  ["AyyyZeN","WavePlayTimeRewards","s"],
+  ["qCloud","WCloud Identity","s"],
+  ["Zitaxo","Zitaxo_Pack_Coffee_Shop","m"],
+  ["DeivisMac","Core Vehicle ESX","s"],
+  ["theebu","Theebu - Trailer Lights","s"],
+  ["an-services","AN Mechanic Job","s"],
+  ["Adem0off","epic_bahamasjob","s"],
+  ["EchoRPFR","LaboCiné","m"],
+  ["JustTobii","Fleecabank | Cikana Modding","m"],
+  ["Prompt","Prompt's Mods - Sandy Gas Station","m"],
+  ["AyyyZeN","WaveAdmin","s"],
+  ["Koldysek","Koldysek Secret Weed Farm","m"],
+  ["Prompt","city_hall_lawn_christmas","m"],
+  ["Loaf-Scripts","loaf_realtor","s"],
+  ["EchoRPFR","Le Celtic","m"],
+  ["HaneStudios","Hane Cigar Room | FREE","m"],
+  ["Luke_Dev","Tackle Open Source","s"],
+  ["ENTSCRIPTS","ENT510 Admin Menu [ESX]","s"],
+  ["malotaylor","Core_Boss","s"],
+  ["ENTSCRIPTS","ENT510 HOUSING SYSTEM V1 [ESX]","s"],
+  ["KaiSoR_Dev","kCrevePneus","s"],
+  ["malotaylor","Craft-Arme","s"],
+  ["GrillmeisterSevices","grs_rapd","s"],
+  ["Treifa","HACK ATM","s"],
+  ["Grizmowe","Cayo Storage","m"],
+  ["Grizmowe","Hideout - Los Santos","m"],
+  ["Grizmowe","Huge Dock Hangar","m"],
+  ["SacarioS","Dealer","s"],
+  ["0rez","BlipsBuilder","s"],
+  ["KaiSoR_Dev","kDistributeur","s"],
+  ["KaiSoR_Dev","kVenteArmeIllegale","s"],
+  ["lucas556","Seiko_Gouvernement-job","s"],
+  ["lucas556","Seiko_AppleStore","s"],
+  ["lucas556","Seiko_tequilala-job","s"],
+  ["KaiSoR_Dev","kFouillePoubelle","s"],
+  ["BMasterTheBro","OS_BlipsBuilder","s"],
+  ["BMasterTheBro","OS_PedBuilder","s"],
+  ["TeezyCore","cfx-tcd-newsDisplay","s"],
+  ["SacarioS","Tabac","s"],
+  ["lucas556","Seiko_Bahamas-Job","s"],
+  ["lucas556","Seiko_Pizzeria-Job","s"],
+  ["SacarioS","ShowRoom","m"],
+  ["lucas556","Seiko_UwU-Cafe-job","s"],
+  ["Carlson_Molas","aigle_nettoyeur","s"],
+  ["SacarioS","GoFast","s"],
+  ["lucas556","Seiko-Car-Leboncoin","s"],
+  ["Oxqb","ZbTaxi","s"],
+  ["lucas556","SeikoMenuGang","s"],
+  ["ENTSCRIPTS","ENT510_OxGarage [ESX]","s"],
+  ["swkeep","keep-harmony","m"],
+  ["Oxqb","a_rockstareditor","s"],
+  ["Yanns_Notay","Job_kebab","s"],
+  ["meinkraftprofi12","primeFarmingCreator","s"],
+  ["lucas556","Seiko_Raffinerie-Job","s"],
+  ["KaiSoR_Dev","kPeche","s"],
+  ["RefinedSolution","rs_doorbell","s"],
+  ["TREESPACE","Ressources [CoreMap] - TreeSpace VFrench V.2 | N°2","m"],
+  ["Sacario","Job Concessionnaire","s"],
+  ["SacarioS","Blanchi","s"],
+  ["Sacario","Job Mecano","s"],
+  ["SacarioS","GiveCar","s"],
+  ["Sacario","Free - BlackMarket","s"],
+  ["Ssusenka","LSPD Training center - MLO","m"],
+  ["OrigenStore","Origen LoadingScreen","s"],
+  ["lucas556","Seiko-AnnounceV2","s"],
+  ["ProjectNSX","sw_hud","s"],
+  ["lucas556","Seiko-Christmas","s"],
+  ["SacarioS","DealerShip","s"],
+  ["Serix_8","[FREE] Garage Tablette - FR Leaks/FS Developement","s"],
+  ["Serix_8","[FREE] Mapping PM JS création by FR Leaks","m"],
+  ["Serix_8","[FREE] Mapping GIGN JS création by FR Leaks","m"],
+  ["Elevate_Studios","Elevate_Build","m"],
+  ["PYRO_MAPS","Retro Bar","m"],
+  ["loopstudios9beno","Test de Poudre","s"],
+  ["ulfdennis1","ulf_mcm_house","m"],
+  ["Yanns_Notay","aigle_livraison","s"],
+  ["Martttins","MT-RESTAURANTS","s"],
+  ["Pluto_Devs","Addiction (ESCROW) (ESX)","s"],
+  ["Loaf-Scripts","loaf_garage","s"],
+  ["VortexMapping","Vortex Footwear","m"],
+  ["KaiSoR_Dev","kAirdrop","s"],
+  ["MIO_Scripts","Mio Christmas","s"],
+  ["lucas556","Seiko_Taxi-Job","s"],
+  ["vames23","vms_documentsV2","s"],
+  ["KaiSoR_Dev","kWipe","s"],
+  ["TeezyCore","cfx-tcd-starterpack","s"],
+  ["VortexMapping","Vortex_Phonestore","m"],
+  ["sevendioorf","fivestar_internal_radio","s"],
+  ["prestigehairline","crp_towerviewers","s"],
+  ["S1nScripts","S1nScripts - Library","s"],
+  ["S1nScripts","S1nScripts - Encrypted - QB/ESX - Banking","s"],
+  ["CruxStudio","Crux - The Taco Farmer","s"],
+  ["lucas556","SeikoFishing","s"],
+  ["RAINO_04","RAINODEVELOPMENT-PILLBOXPARKING-MLO","m"],
+  ["NoedL","NDL Carriers","s"],
+  ["TREESPACE","Ressources [CoreJobs] - TreeSpace VFrench V.2 | N°1","s"],
+  ["KREAKTIVE","cfx-kreak-harmony","m"],
+  ["KREAKTIVE","cfx-kreak-paletoharmony","m"],
+  ["NGRP_Lk9FX","store_PetShop","m"],
+  ["HaneStudios","Hane Auto Shop Quality Versions","m"],
+  ["DeivisMac","Core Notify","s"],
+  ["NGRP_Lk9FX","Mechanic1","m"],
+  ["lucas556","STaxi","s"],
+  ["VortexMapping","Vortex_LSMC","m"],
+  ["LA_Customs","[FREE] Tire Repair","s"],
+  ["LA_Customs","[FREE] Truck Simulator","s"],
+  ["LA_Customs","weapon drop","s"],
+  ["KryZan","Kz-Headphones","s"],
+  ["aiostore","[Escrow] AIO Towing System","s"],
+  ["BeasT-FiveMods","bst_flywheels_store","m"],
+  ["uniqteam","EVIDENCE SYSTEM [ESX/QB/QBOX]","s"],
+  ["kiiya","Pillbox Medical Center - kiiya","m"],
+  ["kiiya","Mission Row Police Dept. - kiiya","m"],
+  ["Zea-Development","z_hose - Zea Development","s"],
+  ["Rejox","RxReports","s"],
+  ["NiaouBreGatoula","Pegasus-AntiBackdoor","s"],
+  ["KVonnE","61st / Indiana Ave","m"],
+  ["KVonnE","60th / Calumet Ave","m"],
+  ["Tetley_Studio","Dust2 Free map","m"],
+  ["Soloty","soloty-crackhouse","m"],
+  ["Soloty","soloty-darkwood","m"],
+  ["Soloty","soloty-freemap-extensionforumdrive","m"],
+  ["Soloty","soloty-basketball-court","m"],
+  ["Soloty","soloty_ruined_hideaway","m"],
+  ["0Resmondev","stache-phone","s"],
+  ["CosmicCrafts","Cosmic Craft CarMenu","s"],
+  ["Jakersuk","Jakers_Containers_01","m"],
+  ["RSD_Coder","RSD VESPUCCI POLICE","m"],
+  ["RSD_Coder","RSD CYBER","m"],
+  ["noisiaknk","variousvehicles","s"],
+  ["noisiaknk","taxicars","s"],
+  ["GreenBeerg_21","[MLO] Maze Bank (Del Perro)","m"],
+  ["Pata_PataMods","Pata_MarketShop","m"],
+  ["EddyPasquinar","NSX - Safe Zone","s"],
+  ["MXAIZEN","Agea59_cayo_perico_village_1","m"],
+  ["stgscripts.com","[STG-STORE] Basic Radio [Escrow]","s"],
+  ["ElPancho_33","LSFDV2 Add-on EUP","s"],
+  ["PoloMaps","PoloMaps_KellyPark","m"],
+  ["IzzyShop","ttmodz_izzy_mechanical","m"],
+  ["IzzyShop","ttmodz_izzy_ems","m"],
+  ["IzzyShop","Izzy Sun Cafe","m"],
+  ["IzzyShop","Izzy-PvpHud","s"],
+  ["fantasyscripts","fs-clothing","s"],
+  ["SolosV1","Solos-JointRoller","s"],
+  ["DurtyFree","Forge Studios - Xmas Street Lighting","m"],
+  ["Tanaya_Paltan","tanaya-bagshop","m"],
+  ["quasarstore","Motorhome [props]","m"],
+  ["quasarstore","KawaiixQuasar [props]","m"],
+  ["quasarstore","KillstorexQuasar [props]","m"],
+  ["quasarstore","lunaticstudio_promo001 [props]","m"],
+  ["quasarstore","murm_dec_pack [props]","m"],
+  ["quasarstore","Dispatch and MDT","s"],
+  ["BrotherVMlo","brother_asgard","m"],
+  ["Lunaris42","LS-vehicleshop","m"],
+  ["CubX_Development","DS Prompt - Escrow","s"],
+  ["ScriptsMSM","MSM-MAP","m"],
+  ["summit_mods","Cafe Lounge","m"],
+  ["summit_mods","Villa Fourté","m"],
+  ["summit_mods","Willow Crest","m"],
+  ["OGMaps","Senora_Freeway_SpeedTune","m"],
+  ["OGMaps","Fred-rays-electronics","m"],
+  ["OGMaps","Fred_Paleto_Taxi","m"],
+  ["jaksam1074","Billing UI","s"],
+  ["mendestossss","pbmc","m"],
+  ["mendestossss","map4allsandy","m"],
+  ["NTeamDevelopment","NTeam Development Script Showroom","m"],
+  ["insMaps","ENGLEWOOD","m"],
+  ["mendestossss","thetown","m"],
+  ["_SubhamPRO","Modern Housing Shell 01","m"],
+  ["SpicyTastyst","PropsChristmas","m"],
+  ["SpicyTastyst","UsableProps","m"],
+  ["NTeamDevelopment","NTeam Development Halloween Decoration","m"],
+  ["lucas556","Seiko_LTD-Job","s"],
+  ["insMaps","Davis Shm","m"],
+  ["Lith_Studios","Bolt Minigame | Export [STANDALONE]","s"],
+  ["mendestossss","AjoxonHospital","m"],
+  ["mendestossss","taxi","s"],
+  ["mendestossss","policetrainning","m"],
+  ["NTeamDevelopment","NTeam Development Borders [ESX/QB]","m"],
+  ["Illuminati44","YTPodiums","m"],
+  ["Illuminati44","YTLifeinvader Ads","m"],
+  ["ScriptsMSM","MSM-TRUNKITEMS","s"],
+  ["NTeamDevelopment","NTeam Development Map Connection Road","m"],
+  ["CubX_Development","DS Notify - Escrow","s"],
+  ["AlbisenOSP","Farming Job","s"],
+  ["mendestossss","hookiesas","m"],
+  ["devcore.cz","DEVCORE | TAGS SYSTEM","s"],
+  ["Dks_MLO","Altruist's Secret Shrine","m"],
+  ["mendestossss","bobcat","m"],
+  ["mendestossss","ashousemer","m"],
+  ["Galaxis-Studios","Galaxis Studios - Military Office","m"],
+  ["ShopFusion","dl_mining_ores","m"],
+  ["ShopFusion","dl_port_warehouse","m"],
+  ["ShopFusion","dl_modular_pipes","m"],
+  ["ShopFusion","dl_tanker_mlo","m"],
+  ["ShopFusion","dl_ingnots_01","m"],
+  ["ShopFusion","dl_cheese_package_bundle_01","m"],
+  ["ShopFusion","le_wedding_place","m"],
+  ["TeamsGG","tgg-contracts","s"],
+  ["0Resmondev","0r-farmingv2-escrow","s"],
+  ["quasarstore","Gangs","s"],
+  ["sixtentinayt","sixtaxi","s"],
+  ["GreenBeerg_21","[MLO] FishStore","m"],
+  ["NTeamDevelopment","NTeam Development XMAS Decoration","m"],
+  ["J0KER.MAPS","J13_HNY_2023","m"],
+  ["mendestossss","_flame-studios-fortZancudoe","m"],
+  ["NE_NOORE","Cayo_Perico_Bridge_V1_by_NE_NOORE","m"],
+  ["DeunServices","D-Phone Free Edition","s"],
+  ["kiiya","Christmas Park - kiiya","m"],
+  ["EnsureDev","Livraison-Journaux-Zeno","s"],
+  ["EnsureDev","Ammo-Box","s"],
+  ["EnsureDev","Bombe Oxygene","s"],
+  ["EnsureDev","Malette Sécurisé","s"],
+  ["KenshiDev","Weapon Animations V2","s"],
+  ["mendestossss","villa","m"],
+  ["TurboSaift","studio_lsia_skatepark","m"],
+  ["mendestossss","sparkRanger","m"],
+  ["HaneStudios","Hane Auto Shop","m"],
+  ["mendestossss","mz3dburgershot","m"],
+  ["Alex_RXQ","Five / Upcore_reports","s"],
+  ["jaksam1074","[ESX] Dealerships Creator","s"],
+  ["Kuzkay","KQ Rollback","s"],
+  ["Kuzkay","KQ Smooth Throttle Control","s"],
+  ["mendestossss","disty","m"],
+  ["mendestossss","mrpdTS","m"],
+  ["mendestossss","mrpdnteam","m"],
+  ["Steeve_1sj","sj_botanical_island","m"],
+  ["AsiaDevelops","Prime Taxi","s"],
+  ["mendestossss","MRPDnteamv2","m"],
+  ["TheEternalTrooper","TheEternal_SenoraNational_NPS_Sign","m"],
+  ["mendestossss","LSCenergy","m"],
+  ["mendestossss","ridecustomsenergy","m"],
+  ["PixelCraft_dev","pc-blueprints","s"],
+  ["TMaps","TM Hotdog Restaurant","m"],
+  ["TMaps","TM_Royal Motors","m"],
+  ["TMaps","Legion Motorcycles","m"],
+  ["Txpac","ACT_Records","m"],
+  ["mendestossss","tokyo","m"],
+  ["KeneticStudios","KS OX_INVENTORY REDESIGN","s"],
+  ["ElPancho_33","LSFDv2 Add-on EUP (TOS Friendly)","s"],
+  ["0Resmondev","frkn-fuelstationv4-escrow","s"],
+  ["Ciastekbatak","Kingmaps_Driving_school","m"],
+  ["Offload_Studio","offload_carmenu","s"],
+  ["Energy.Shop","Energy Farm House O'neil","m"],
+  ["TheF3nt0n","The Security Pack","s"],
+  ["loopstudios9beno","Sabot Véhicule","s"],
+  ["mendestossss","pdlapuerta","m"],
+  ["mendestossss","solotyhood","m"],
+  ["Sotek","sotek_marketRobbery","s"],
+  ["DurtyFree","Forge Studios - City Park Lawyer Office","m"],
+  ["NTeamDevelopment","NTeam Development Map Tunnel","m"],
+  ["vames23","vms_tuning","s"],
+  ["mendestossss","asgardclub","m"],
+  ["jaksam1074","[ESX] Farming Creator","s"],
+  ["mendestossss","pitstop","m"],
+  ["mendestossss","dinasty_nord","m"],
+  ["mendestossss","nordhood","m"],
+  ["mendestossss","quadnteamv2","m"],
+  ["ShopFusion","shushi_prop_pack_01","m"],
+  ["mendestossss","kingmaps","m"],
+  ["Cylex","custom emotes for cylex_animmenuv2","s"],
+  ["Cylex","cylex_animmenuv2 - no custom emotes","s"],
+  ["GustaveraMods","gustavera-san-viera-med","m"],
+  ["mendestossss","mc_skydome","m"],
+  ["mendestossss","fmlppd","m"],
+  ["PixelCraft_dev","mechanic-minigames","s"],
+  ["LegendsDev","Legends Driveby","s"],
+  ["GoComedyFun","Dj_Fun","s"],
+  ["GigZM","GigZ_Davis_Mall_Ltd_cfx","m"],
+  ["BaDstY30","TP Menu OX","s"],
+  ["BaDstY30","VITRINE CONCESSIONNAIRE OX","s"],
+  ["BaDstY30","CONNECT SCRIPT FIVEM OX","s"],
+  ["BaDstY30","METRO SCRIPT OX","s"],
+  ["BaDstY30","SCRIPT DRUGS OX FIVEM","s"],
+  ["BaDstY30","Location OX","s"],
+  ["BaDstY30","JOB VIGNERON","s"],
+  ["BaDstY30","SCRIPT COFFRE BUILDER V2 OX","s"],
+  ["BaDstY30","JOB DISTILLERIE OX","s"],
+  ["BaDstY30","BOSS MENU OX","s"],
+  ["BaDstY30","JOB FERMIER","s"],
+  ["BaDstY30","SCRIPT ANNONCE OX","s"],
+  ["BaDstY30","CATALOGUE VEHICULE OX","s"],
+  ["BaDstY30","JOB MINE","s"],
+  ["BaDstY30","JOB GOUVERNEMENT","s"],
+  ["BaDstY30","JOB BURGERSHOT","s"],
+  ["BaDstY30","SCRIPT RECOLTE OX","s"],
+  ["BaDstY30","SCRIPT COFFRE BUILDER OX","s"],
+  ["mendestossss","minox-grove-streett","m"],
+  ["mendestossss","cfx-agea59_murrieta","m"],
+  ["Zea-Development","z_fire","s"],
+  ["NTeamDevelopment","NTeam Development Train Scenario","s"],
+  ["mendestossss","PoloMaps_HydeParkAcademy","m"],
+  ["quasarstore","Crutches","s"],
+  ["ak4yak4y","ak4y-outfitBag - ESCROW","s"],
+  ["molo-modding","molo_townhall","m"],
+  ["mendestossss","energy_losantosmedical","m"],
+  ["mendestossss","energy_motoclub","m"],
+  ["mendestossss","energy_westcoastgarage","m"],
+  ["mendestossss","energy_lafuente_farm","m"],
+  ["mendestossss","energy_rockfordhospital","m"],
+  ["mendestossss","energy_hpdowntown","m"],
+  ["mendestossss","energy_galaxy","m"],
+  ["mendestossss","rdzk_cs_hospital","m"],
+  ["mendestossss","sandyreborn2","m"],
+  ["mendestossss","sandyreborn3","m"],
+  ["mendestossss","sandyreborn1","m"],
+  ["mendestossss","sandyreborn5","m"],
+  ["Brown-Development","Browns Fuel Theft","s"],
+  ["SavanaDev","savana-truckerjob","s"],
+  ["SavanaDev","savana-truckerjob Open Source","s"],
+  ["CodeForge","Forge-CarWash","s"],
+  ["TeamsGG","tgg-hud","s"],
+  ["KodeineeScriptz","Kodeinee_iFruitpodsV1ESX","s"],
+  ["quasarstore","Recorder App [dlc]","s"],
+  ["quasarstore","Crime App [dlc]","s"],
+  ["quasarstore","Diamond Casino App [dlc]","s"],
+  ["quasarstore","Motels App [dlc]","s"],
+  ["quasarstore","Racing App [dlc]","s"],
+  ["quasarstore","Yacht App [dlc]","s"],
+  ["quasarstore","Radio App [dlc]","s"],
+  ["quasarstore","Restaurants App [dlc]","s"],
+  ["quasarstore","Lottery App [dlc]","s"],
+  ["quasarstore","Vending Machines App [dlc]","s"],
+  ["quasarstore","Smartphone PRO [main]","s"],
+  ["quasarstore","Smartphone PRO [props]","s"],
+  ["supergashbell","Fiv3Devs - Vanilla Unicorn","m"],
+  ["PlexScripts","PlexScripts Parkingmeter System","s"],
+  ["PlexScripts","PlexScripts Propfix","s"],
+  ["PlexScripts","PlexScripts Lottery","s"],
+  ["Loaf-Scripts","loaf_housing","s"],
+  ["K4MB1","k4mb1-drills","s"],
+  ["K4MB1","k4mb1-van","s"],
+  ["K4MB1","K4MB1-MainHousing","s"],
+  ["grootx_development","g-welcomerewards","s"],
+  ["quasarstore","Lottery Creator","s"],
+  ["quasarstore","Aura AI [dlc]","s"],
+  ["0Resmondev","0R Lib","s"],
+  ["quasarstore","Motorhome [main]","s"],
+  ["PatocheOnFiveM","sBlipsBuilder","s"],
+  ["quasarstore","Diamond Casino [map]","m"],
+  ["Martttins","MT-RESTAURANTS V2","s"],
+  ["quasarstore","Medical Creator","s"],
+  ["NTeamDevelopment","NTeam Development Borders Map","m"],
+  ["ElevateStudios","[Elevate Studios] Ox Target Redesign - Open Source","s"],
+  ["Kuzkay","KQ Prop Placer","s"],
+  ["Prompt","Prompt's Mods - (8 bays) Vespucci Fire Department","m"],
+  ["Prompt","Prompt's Mods - (4 bays) Vespucci Fire Department","m"],
+  ["vertex_group","wild_camping_house_free","m"],
+  ["Nextcore_Studio","Next Ped Manager - Create and manage your peds easily","s"],
+  ["quasarstore","Housing [props]","m"],
+  ["PrismCFX","prism_outfitbag","s"],
+  ["quasarstore","Fuel Stations","s"],
+  ["PrismCFX","prism_scratchcard","s"],
+  ["zProjectz","zSleep","s"],
+  ["K4MB1","K4MB1-StarterShells","m"],
+  ["LondonStudios","Directional Spikes","s"],
+  ["Bugy_Developer","BUGY TARGET","s"],
+  ["KRILLE","kr_pets","s"],
+  ["quasarstore","Phone Booths [dlc]","s"],
+  ["KodeineeScriptz","Kodeinee_iFruitpods","s"],
+  ["vames23","vms_tattooshop","s"],
+  ["supergashbell","Fiv3Devs - Mapdata","m"],
+  ["vames23","vms_bossmenu","s"],
+  ["vames23","vms_cityhall","s"],
+  ["LondonStudios","British Ladder Truck","s"],
+  ["LondonStudios","British Ladder Truck - ELS Version","s"],
+  ["LondonStudios","Tiller Ladder Truck","s"],
+  ["LondonStudios","Tiller Ladder Truck - ELS Version","s"],
+  ["quasarstore","Shops Creator","s"],
+  ["ak4yak4y","ak4y-core","s"],
+  ["quasarstore","Loadingscreen","s"],
+  ["quasarstore","Tutorial","s"],
+  ["quasarstore","Books Creator","s"],
+  ["Offload_Studio","offload_smash_grab","s"],
+  ["quasarstore","Crime Creator","s"],
+  ["Energy.Shop","Energy RedLine Mechanic","m"],
+  ["quasarstore","Police Job Creator","s"],
+  ["quasarstore","Lumberjack Job","s"],
+  ["quasarstore","Vehiclekeys","s"],
+  ["jaksam1074","Advanced Drugs System","s"],
+  ["jaksam1074","[ESX] Doors Creator","s"],
+  ["rcorer","core_banners","s"],
+  ["quasarstore","Interface","s"],
+  ["pScripts","p_dmvschool","s"],
+  ["TDYSKY","Agency-Elevator","s"],
+  ["PixelCraft_dev","pc-admin","s"],
+  ["jaksam1074","Jobs Creator","s"],
+  ["quasarstore","Billing","s"],
+  ["ThaC","CodeM Supreme Radialmenu - STANDALONE","s"],
+  ["jaksam1074","[ESX] Robberies Creator","s"],
+  ["TurboSaift","studio_legionsquare_garage","m"],
+  ["TurboSaift","studio_ext_boxshow_pier","m"],
+  ["TurboSaift","studio_ext_little_beachclub","m"],
+  ["quasarstore","Admin Menu","s"],
+  ["quasarstore","Vehicleshop","s"],
+  ["quasarstore","Restaurant Creator","s"],
+  ["quasarstore","Housing [main]","s"],
+  ["quasarstore","Text UI","s"],
+  ["quasarstore","Drugs Creator","s"],
+  ["quasarstore","Diamond Casino [asset]","m"],
+  ["AlbisenOSP","Ambulance Job","s"],
+  ["quasarstore","Multicharacter","s"],
+  ["quasarstore","Smartphone v3","s"],
+  ["quasarstore","Pause Menu","s"],
+  ["quasarstore","Mechanic Creator","s"],
+  ["quasarstore","Garages","s"],
+  ["TGIANN","tgiann-core","s"]
+];
+const DEFAULT_BANNER = "https://media.discordapp.net/attachments/1401150595750170806/1562508545306402857/Design_sans_titre.png?ex=6ada3efb&is=6ad8ed7b&hm=1a931b8608c3e9cff66641296c1d46ba005616a65c78890c44a50a1080289c7b&=&format=webp&quality=lossless&width=1280&height=74";
+
+const STATUS = {
+  'Fini / Corrigé': { label: '✅ Corrigé / Fini', badge: 'fini', color: 0x10b981 },
+  'En cours':       { label: '⏳ En cours de développement', badge: 'cours', color: 0xf59e0b },
+  'Nouveauté':      { label: '✨ Nouveauté / Ajout', badge: 'nouveau', color: 0x3b82f6 },
+  'Optimisation':   { label: '⚡ Optimisation / Fix Performance', badge: 'opti', color: 0x8b5cf6 }
+};
+const CUSTOM = '__custom';
+const AVAIL = ['🟢 Disponible maintenant', '🔄 Au prochain restart', '⛈️ Prochaine tempête', '🕒 Prochainement'];
+const HOOK_RE = /^https:\/\/(?:(?:ptb|canary)\.)?discord(?:app)?\.com\/api\/webhooks\/\d+\/[\w-]+/;
+const K = { custom: 'valongo_custom_assets', legacy: 'valongo_assets', patchs: 'valongo_patchs', devs: 'valongo_devs_list', dev: 'valongo_selected_dev', hook: 'valongo_webhook', banner: 'valongo_banner_url' };
+
+/* ---------- Helpers ---------- */
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const clip = (s, n) => s.length > n ? s.slice(0, n - 1) + '…' : s;
+const debounce = (fn, ms = 120) => { let t; return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), ms); }; };
+const raw = {
+  get: k => { try { return localStorage.getItem(k); } catch { return null; } },
+  set: (k, v) => { try { localStorage.setItem(k, v); } catch {} },
+  del: k => { try { localStorage.removeItem(k); } catch {} }
+};
+const load = (k, d) => { try { return JSON.parse(raw.get(k)) ?? d; } catch { return d; } };
+const save = (k, v) => raw.set(k, JSON.stringify(v));
+const keyOf = a => `${a.author}::${a.name}`;
+
+/* Nom affiché sur l'embed : retire le nom du créateur / les crédits (ex. "Crux - X", "X - kiiya", "X - FR Leaks/FS Developement") */
+const norm = s => s.toLowerCase().replace(/[^a-z0-9]/g, '');
+const CREDIT_RE = /leaks|fs\s*develop|modding/i;
+function cleanName(a) {
+  const au = norm(a.author);
+  const parts = a.name.split(/\s+[-–|]\s+/).map(x => x.trim()).filter(Boolean);
+  const kept = parts.filter(x => {
+    const n = norm(x);
+    const isAuthor = au.length >= 3 && n.length >= 3 && (au.includes(n) || n.includes(au));
+    return !isAuthor && !CREDIT_RE.test(x);
+  });
+  return (kept.length ? kept : parts.slice(0, 1)).join(' - ') || a.name;
+}
+
+let toastTimer;
+function toast(msg, ok = true) {
+  const t = $('#toast');
+  t.textContent = msg;
+  t.className = 'show' + (ok ? '' : ' err');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { t.className = ''; }, 3500);
+}
+
+/* ---------- État ---------- */
+const base = RAW.map(([author, name, t]) => ({ author, name, type: t === 'm' ? 'map' : 'script' }));
+let custom = load(K.custom, []);
+const legacy = load(K.legacy, null); // ancienne version : liste complète stockée en local
+if (Array.isArray(legacy)) {
+  const known = new Set(base.map(keyOf));
+  custom = legacy.filter(a => a && a.name && !known.has(keyOf(a)));
+  save(K.custom, custom);
+  raw.del(K.legacy);
+}
+if (!Array.isArray(custom)) custom = [];
+
+let patchs = load(K.patchs, null);
+if (!Array.isArray(patchs)) patchs = [{
+  script: 'Smartphone PRO [main]', assetType: 'Script', status: 'Fini / Corrigé', dev: 'Mendestoss', date: '21/10/2026 à 18:30',
+  reason: "Configuration initiale des cartes SIM USA (AT&T / Verizon).\nTraduction intégrale en français des applications de base."
+}];
+let devs = load(K.devs, null);
+if (!Array.isArray(devs) || !devs.length) devs = ['Mendestoss', 'Alex', 'Jordan', 'Lucas'];
+
+const state = { type: 'Script', cat: 'all', sorted: [], byKey: new Map() };
+
+function rebuildAssets() {
+  state.sorted = [...base, ...custom].sort((a, b) => a.name.localeCompare(b.name));
+  state.byKey = new Map(state.sorted.map(a => [keyOf(a), a]));
+}
+const selected = () => state.byKey.get($('#patchAsset').value);
+const bannerUrl = () => raw.get(K.banner) || DEFAULT_BANNER;
+const stamp = (d = new Date()) => `${d.toLocaleDateString('fr-FR')} à ${d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}`;
+
+function formData() {
+  return {
+    script: selected() ? cleanName(selected()) : '',
+    assetType: state.type,
+    status: $('#patchStatus').value,
+    dev: $('#patchDev').value || devs[0],
+    date: $('#patchDate').value,
+    availability: $('#patchAvail').value === CUSTOM ? $('#patchAvailCustom').value.trim() : $('#patchAvail').value,
+    reason: $('#patchReason').value.trim()
+  };
+}
+
+/* ---------- Rendu ---------- */
+function renderSelect() {
+  const sel = $('#patchAsset'), prev = sel.value, q = $('#formSearch').value.trim().toLowerCase();
+  const frag = document.createDocumentFragment();
+  frag.append(new Option('-- Sélectionner dans la liste --', ''));
+  for (const a of state.sorted) {
+    if ((state.cat === 'all' || a.type === state.cat) && `${a.author} ${a.name}`.toLowerCase().includes(q))
+      frag.append(new Option(`[${a.author}] ${a.name}`, keyOf(a)));
+  }
+  sel.replaceChildren(frag);
+  sel.value = prev;
+  if (sel.selectedIndex < 0) sel.selectedIndex = 0;
+}
+
+function renderCatalogue() {
+  const q = $('#catSearch').value.trim().toLowerCase();
+  const mine = new Set(custom.map(keyOf));
+  const list = state.sorted.filter(a => `${a.author} ${a.name}`.toLowerCase().includes(q));
+  $('#catCount').textContent = `(${list.length})`;
+  $('#catGrid').innerHTML = list.map(a => `
+    <div class="script-card">
+      <div><div class="script-name">${esc(a.name)}</div><div class="script-author"><i class="fa-solid ${a.type === 'map' ? 'fa-map' : 'fa-code'}"></i> ${esc(a.author)}</div></div>
+      ${mine.has(keyOf(a))
+        ? `<button class="btn-secondary danger" data-del="${esc(keyOf(a))}" aria-label="Supprimer"><i class="fa-solid fa-trash"></i></button>`
+        : '<i class="fa-solid fa-check-circle" style="color:var(--primary)"></i>'}
+    </div>`).join('');
+}
+
+function renderPatches() {
+  $('#patchList').innerHTML = patchs.length ? patchs.map((p, i) => {
+    const s = STATUS[p.status] ?? STATUS['En cours'];
+    return `
+    <div class="patch-item">
+      <div class="patch-header">
+        <div class="patch-script"><span class="tag">[${esc(p.assetType || 'Script')}]</span> ${esc(p.script)}</div>
+        <span class="badge badge-${s.badge}">${esc(p.status)}</span>
+      </div>
+      ${p.availability ? `<div class="avail">🕒 ${esc(p.availability)}</div>` : ''}
+      <div class="patch-desc">${esc(p.reason)}</div>
+      <div class="patch-footer">
+        <div class="patch-dev"><i class="fa-solid fa-user-ninja"></i> ${esc(p.dev)}</div>
+        <div><i class="fa-regular fa-clock"></i> ${esc(p.date)} <button class="btn-secondary danger" data-del="${i}" aria-label="Supprimer ce patch"><i class="fa-solid fa-trash"></i></button></div>
+      </div>
+    </div>`;
+  }).join('') : '<p class="muted">Aucun patch note enregistré.</p>';
+}
+
+function renderStats() {
+  $('#statAssets').textContent = state.sorted.length;
+  $('#statDone').textContent = patchs.filter(p => p.status === 'Fini / Corrigé').length;
+  $('#statPending').textContent = patchs.filter(p => p.status === 'En cours').length;
+}
+
+function renderDevSelect() {
+  const sel = $('#patchDev'), want = sel.value || raw.get(K.dev) || devs[0];
+  sel.replaceChildren(...devs.map(d => new Option(d, d)));
+  sel.value = devs.includes(want) ? want : devs[0];
+  $('#devName').textContent = sel.value;
+}
+
+function renderDevList() {
+  $('#devList').innerHTML = devs.map((d, i) => `
+    <div class="dev-item"><span>${esc(d)}</span>
+      <span class="row">
+        <button class="btn-secondary" data-edit="${i}" aria-label="Renommer"><i class="fa-solid fa-pen"></i></button>
+        <button class="btn-secondary danger" data-rm="${i}" aria-label="Supprimer"><i class="fa-solid fa-trash"></i></button>
+      </span>
+    </div>`).join('');
+}
+
+function updatePreview() {
+  const f = formData();
+  $('#prevType').textContent = `${f.assetType}: `;
+  $('#prevName').textContent = f.script || 'Nom du script';
+  $('#prevStatus').textContent = STATUS[f.status]?.label ?? f.status;
+  $('#prevAvailBox').hidden = !f.availability;
+  $('#prevAvail').textContent = f.availability;
+  $('#prevReason').textContent = f.reason || 'Explication des changements...';
+  $('#prevFooter').textContent = `${f.dev} • ${f.date}`;
+}
+
+function setType(type) {
+  state.type = type;
+  $$('.type-btn').forEach(b => b.classList.toggle('active', b.dataset.type === type));
+  updatePreview();
+}
+
+function applyBanner() {
+  const u = bannerUrl();
+  $$('.js-banner').forEach(img => { img.hidden = false; img.src = u; });
+}
+
+/* ---------- Actions ---------- */
+function saveDevs() {
+  save(K.devs, devs);
+  renderDevSelect(); renderDevList(); updatePreview();
+}
+
+async function sendWebhook(p) {
+  const url = (raw.get(K.hook) || '').trim();
+  if (!url) return 'none';
+  if (!HOOK_RE.test(url)) return false;
+  const s = STATUS[p.status];
+  const embed = {
+    title: '🛠️ VALONGO RP - PATCH NOTE',
+    color: s?.color ?? 0x3b82f6,
+    fields: [
+      { name: `📦 ${(p.assetType || 'Script').toUpperCase()}`, value: clip(`\`${p.script}\``, 1024) },
+      { name: '📌 STATUT', value: s?.label ?? p.status, inline: true },
+      { name: '👨‍💻 DÉVELOPPEUR', value: clip(p.dev, 1024), inline: true },
+      ...(p.availability ? [{ name: '🕒 DISPONIBILITÉ', value: clip(p.availability, 1024) }] : []),
+      { name: '📝 MODIFICATIONS / DÉTAILS', value: clip(p.reason, 1024) }
+    ],
+    footer: { text: `Valongo USA RP • ${p.date}` },
+    timestamp: new Date().toISOString()
+  };
+  const banner = bannerUrl();
+  if (/^https?:\/\//.test(banner)) embed.image = { url: banner };
+  try {
+    const r = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username: 'Valongo Dev Bot', embeds: [embed] })
+    });
+    return r.ok;
+  } catch { return false; }
+}
+
+async function addPatch(e) {
+  e.preventDefault();
+  if (!selected()) return toast('Sélectionne un script ou un mapping.', false);
+  const f = formData();
+  const patch = { script: f.script, assetType: f.assetType, status: f.status, dev: f.dev, date: stamp(), availability: f.availability, reason: f.reason };
+  patchs.unshift(patch);
+  save(K.patchs, patchs);
+  renderPatches(); renderStats();
+  $('#patchReason').value = '';
+  updatePreview();
+  const r = await sendWebhook(patch);
+  if (r === 'none') toast('✅ Patch note enregistré (aucun webhook configuré).');
+  else if (r) toast('✅ Patch note enregistré et envoyé sur Discord !');
+  else toast("⚠️ Patch enregistré, mais l'envoi Discord a échoué (vérifie l'URL du webhook).", false);
+}
+
+async function copyDiscord() {
+  const f = formData();
+  const text = `**🛠️ [VALONGO RP] PATCH NOTE**\n> **${f.assetType}:** \`${f.script || 'Nom du script'}\`\n> **Statut:** ${STATUS[f.status]?.label ?? f.status}\n> **Dev:** ${f.dev}\n> **Date:** ${f.date}\n${f.availability ? `> **Disponibilité:** ${f.availability}\n` : ''}\n**Détails:**\n\`\`\`\n${f.reason || '...'}\n\`\`\``;
+  try {
+    await navigator.clipboard.writeText(text);
+    toast('📋 Copié dans le presse-papier !');
+  } catch {
+    const t = Object.assign(document.createElement('textarea'), { value: text });
+    document.body.append(t); t.select();
+    const ok = document.execCommand('copy');
+    t.remove();
+    toast(ok ? '📋 Copié dans le presse-papier !' : 'Copie impossible.', ok);
+  }
+}
+
+function tick() {
+  const d = new Date();
+  $('#clock').textContent = d.toLocaleString('fr-FR', { weekday: 'short', day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' }).toUpperCase();
+  const s = stamp(d), input = $('#patchDate');
+  if (input.value !== s) { input.value = s; updatePreview(); }
+}
+
+/* ---------- Événements ---------- */
+$('nav').addEventListener('click', e => {
+  const b = e.target.closest('[data-tab]');
+  if (!b) return;
+  $$('.tab-content').forEach(el => el.classList.toggle('active', el.id === `tab-${b.dataset.tab}`));
+  $$('.nav-btn').forEach(el => el.classList.toggle('active', el === b));
+});
+
+$('.type-selector').addEventListener('click', e => {
+  const b = e.target.closest('[data-type]');
+  if (b) setType(b.dataset.type);
+});
+
+$('.filter-tabs').addEventListener('click', e => {
+  const b = e.target.closest('[data-cat]');
+  if (!b) return;
+  state.cat = b.dataset.cat;
+  $$('.chip').forEach(c => c.classList.toggle('active', c === b));
+  renderSelect(); onAssetChange();
+});
+
+function onAssetChange() {
+  const a = selected();
+  a ? setType(a.type === 'map' ? 'Mapping' : 'Script') : updatePreview();
+}
+$('#formSearch').addEventListener('input', debounce(() => { renderSelect(); onAssetChange(); }));
+$('#patchAsset').addEventListener('change', onAssetChange);
+$('#patchStatus').addEventListener('change', updatePreview);
+$('#patchReason').addEventListener('input', updatePreview);
+$('#patchAvail').addEventListener('change', e => {
+  const custom = e.target.value === CUSTOM;
+  $('#patchAvailCustom').hidden = !custom;
+  if (custom) $('#patchAvailCustom').focus();
+  updatePreview();
+});
+$('#patchAvailCustom').addEventListener('input', updatePreview);
+$('#patchDev').addEventListener('change', e => {
+  raw.set(K.dev, e.target.value);
+  $('#devName').textContent = e.target.value;
+  updatePreview();
+});
+$('#patchForm').addEventListener('submit', addPatch);
+$('#copyBtn').addEventListener('click', copyDiscord);
+$('#catSearch').addEventListener('input', debounce(renderCatalogue));
+
+$('#patchList').addEventListener('click', e => {
+  const b = e.target.closest('[data-del]');
+  if (!b || !confirm('Supprimer ce patch note ?')) return;
+  patchs.splice(Number(b.dataset.del), 1);
+  save(K.patchs, patchs);
+  renderPatches(); renderStats();
+});
+
+$('#catGrid').addEventListener('click', e => {
+  const b = e.target.closest('[data-del]');
+  if (!b || !confirm('Supprimer cet asset personnalisé ?')) return;
+  custom = custom.filter(a => keyOf(a) !== b.dataset.del);
+  save(K.custom, custom);
+  rebuildAssets(); renderSelect(); renderCatalogue(); renderStats(); onAssetChange();
+});
+
+$('#hookInput').addEventListener('input', e => raw.set(K.hook, e.target.value.trim()));
+$('#bannerInput').addEventListener('input', e => {
+  const v = e.target.value.trim();
+  if (/discord(?:app)?\.com\/channels\//i.test(v)) return toast("Ce lien est celui d'un message, pas d'une image : fais clic droit sur l'image > Copier le lien de l'image.", false);
+  v ? raw.set(K.banner, v) : raw.del(K.banner);
+  applyBanner();
+});
+$$('.js-banner').forEach(img => img.addEventListener('error', () => { img.hidden = true; }));
+
+/* Dialogues */
+$$('dialog').forEach(d => d.addEventListener('click', e => {
+  if (e.target === d || e.target.closest('[data-close]')) d.close();
+}));
+$('#openDevs').addEventListener('click', () => { renderDevList(); $('#devDlg').showModal(); });
+$('#openAsset').addEventListener('click', () => $('#assetDlg').showModal());
+
+$('#devForm').addEventListener('submit', e => {
+  e.preventDefault();
+  const name = $('#devInput').value.trim();
+  if (!name) return;
+  if (devs.includes(name)) return toast('Ce développeur existe déjà.', false);
+  devs.push(name);
+  $('#devInput').value = '';
+  saveDevs();
+});
+
+$('#devList').addEventListener('click', e => {
+  const edit = e.target.closest('[data-edit]'), rm = e.target.closest('[data-rm]');
+  if (edit) {
+    const i = Number(edit.dataset.edit), name = (prompt('Nouveau nom :', devs[i]) || '').trim();
+    if (!name || name === devs[i]) return;
+    if (devs.includes(name)) return toast('Ce développeur existe déjà.', false);
+    devs[i] = name; saveDevs();
+  } else if (rm) {
+    const i = Number(rm.dataset.rm);
+    if (devs.length <= 1) return toast('Il faut garder au moins un développeur.', false);
+    if (!confirm(`Supprimer ${devs[i]} ?`)) return;
+    devs.splice(i, 1); saveDevs();
+  }
+});
+
+$('#assetForm').addEventListener('submit', e => {
+  e.preventDefault();
+  const asset = { author: $('#aAuthor').value.trim() || 'Inconnu', name: $('#aName').value.trim(), type: $('#aType').value };
+  if (!asset.name) return;
+  if (state.byKey.has(keyOf(asset))) return toast('Cet asset existe déjà.', false);
+  custom.push(asset);
+  save(K.custom, custom);
+  rebuildAssets(); renderSelect(); renderCatalogue(); renderStats();
+  e.target.reset();
+  $('#assetDlg').close();
+  toast('✅ Asset ajouté au catalogue.');
+});
+
+/* ---------- Init ---------- */
+$('#patchStatus').replaceChildren(...Object.entries(STATUS).map(([v, s]) => new Option(s.label, v)));
+$('#patchAvail').replaceChildren(...AVAIL.map(v => new Option(v, v)), new Option('✏️ Autre…', CUSTOM));
+$('#hookInput').value = raw.get(K.hook) || '';
+$('#bannerInput').value = raw.get(K.banner) || '';
+rebuildAssets();
+applyBanner();
+renderDevSelect(); renderSelect(); renderCatalogue(); renderPatches(); renderStats();
+tick(); setInterval(tick, 1000);
+setType('Script');
+})();
+</script>
+</body>
+</html>
