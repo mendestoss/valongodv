@@ -154,13 +154,13 @@ dialog::backdrop{background:rgba(0,0,0,.7)}
   </nav>
   <div class="dev-badge">
     <div class="dev-avatar"><i class="fa-solid fa-user-gear"></i></div>
-    <div><div id="devName" style="font-size:13px;font-weight:700">Mendestoss</div><div class="muted" style="font-size:11px">Lead Dev USA RP</div></div>
+    <div><div id="devName" style="font-size:13px;font-weight:700">Mendestoss</div><div class="muted" style="font-size:11px">Lead Dev  RP</div></div>
   </div>
 </aside>
 
 <main>
   <header>
-    <div><h2>Gestionnaire de Mises à Jour</h2><p>Base USA Realistic - Valongo Server Dashboard</p></div>
+    <div><h2>Gestionnaire de Mises à Jour</h2><p>Base  Realistic - Valongo Server Dashboard</p></div>
     <div id="clock"></div>
   </header>
 
@@ -226,7 +226,7 @@ dialog::backdrop{background:rgba(0,0,0,.7)}
           <div class="card-header"><div class="card-title"><i class="fa-brands fa-discord"></i> Aperçu Discord Embed</div></div>
           <div class="discord-preview">
             <div class="discord-bot">VALONGO BOT</div>
-            <div class="discord-title">🛠️ PATCH NOTE - VALONGO USA</div>
+            <div class="discord-title">🛠️ PATCH NOTE - VALONGO </div>
             <div style="font-size:12px;color:#dcddde"><b id="prevType">Script: </b><span id="prevName"></span></div>
             <div class="discord-field"><div class="discord-field-name">STATUT</div><div class="discord-field-val" id="prevStatus"></div></div>
             <div class="discord-field" id="prevAvailBox"><div class="discord-field-name">DISPONIBILITÉ</div><div class="discord-field-val" id="prevAvail"></div></div>
@@ -471,7 +471,7 @@ const RAW = [
   ["mendestossss","thetown","m"],
   ["_SubhamPRO","Modern Housing Shell 01","m"],
   ["SpicyTastyst","PropsChristmas","m"],
-  ["SpicyTastyst","UsableProps","m"],
+  ["SpicyTastyst","bleProps","m"],
   ["NTeamDevelopment","NTeam Development Halloween Decoration","m"],
   ["lucas556","Seiko_LTD-Job","s"],
   ["insMaps","Davis Shm","m"],
@@ -775,7 +775,7 @@ if (!Array.isArray(custom)) custom = [];
 let patchs = load(K.patchs, null);
 if (!Array.isArray(patchs)) patchs = [{
   script: 'Smartphone PRO [main]', assetType: 'Script', status: 'Fini / Corrigé', dev: 'Mendestoss', date: '21/10/2026 à 18:30',
-  reason: "Configuration initiale des cartes SIM USA (AT&T / Verizon).\nTraduction intégrale en français des applications de base."
+  reason: "Configuration initiale des cartes SIM  (AT&T / Verizon).\nTraduction intégrale en français des applications de base."
 }];
 let devs = load(K.devs, null);
 if (!Array.isArray(devs) || !devs.length) devs = ['Mendestoss', 'Alex', 'Jordan', 'Lucas'];
@@ -915,7 +915,7 @@ async function sendWebhook(p) {
       ...(p.availability ? [{ name: '🕒 DISPONIBILITÉ', value: clip(p.availability, 1024) }] : []),
       { name: '📝 MODIFICATIONS / DÉTAILS', value: clip(p.reason, 1024) }
     ],
-    footer: { text: `Valongo USA RP • ${p.date}` },
+    footer: { text: `Valongo  RP • ${p.date}` },
     timestamp: new Date().toISOString()
   };
   const banner = bannerUrl();
