@@ -91,6 +91,9 @@ textarea.form-control{resize:vertical;min-height:100px}
 .badge-fini{background:rgba(16,185,129,.15);color:var(--fini)}
 .badge-nouveau{background:rgba(59,130,246,.15);color:var(--nouveau)}
 .badge-opti{background:rgba(139,92,246,.15);color:var(--opti)}
+.btn-ghost{background:var(--border);width:100%;margin-top:10px}
+.btn-ghost:hover{background:#334155}
+.sync{font-size:11px;color:var(--muted);margin-bottom:12px}
 .avail{font-size:12px;font-weight:600;color:var(--fini);margin-bottom:8px}
 .patch-desc{font-size:13px;color:#cbd5e1;margin-bottom:12px;white-space:pre-line;line-height:1.5;overflow-wrap:anywhere}
 .patch-footer{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:11px;color:var(--muted);border-top:1px solid rgba(255,255,255,.05);padding-top:8px}
@@ -152,15 +155,16 @@ dialog::backdrop{background:rgba(0,0,0,.7)}
     <button class="nav-btn" data-tab="catalogue"><i class="fa-solid fa-boxes-stacked"></i> Catalogue Assets</button>
     <button class="nav-btn" data-tab="settings"><i class="fa-solid fa-gears"></i> Webhook Discord</button>
   </nav>
+  <div class="sync" id="syncState">⚪ Mode local</div>
   <div class="dev-badge">
     <div class="dev-avatar"><i class="fa-solid fa-user-gear"></i></div>
-    <div><div id="devName" style="font-size:13px;font-weight:700">Mendestoss</div><div class="muted" style="font-size:11px">Lead Dev  RP</div></div>
+    <div><div id="devName" style="font-size:13px;font-weight:700">Mendestoss</div><div class="muted" style="font-size:11px">Lead Dev USA RP</div></div>
   </div>
 </aside>
 
 <main>
   <header>
-    <div><h2>Gestionnaire de Mises à Jour</h2><p>Base  Realistic - Valongo Server Dashboard</p></div>
+    <div><h2>Gestionnaire de Mises à Jour</h2><p>Base USA Realistic - Valongo Server Dashboard</p></div>
     <div id="clock"></div>
   </header>
 
@@ -214,7 +218,16 @@ dialog::backdrop{background:rgba(0,0,0,.7)}
             <div class="form-group"><label class="form-label" for="patchDate">Date et Heure (Automatique)</label><input type="text" class="form-control" id="patchDate" readonly style="opacity:.7"></div>
             <div class="form-group"><label class="form-label" for="patchReason">Description / Détails des modifications</label><textarea class="form-control" id="patchReason" required maxlength="1000" placeholder="Ex: Correction du bug d'inventaire, traduction des peds en US, optimisation des FPS..."></textarea></div>
             <button type="submit" class="btn btn-primary"><i class="fa-solid fa-paper-plane"></i> Publier &amp; Envoyer au Webhook Discord</button>
+            <button type="button" class="btn btn-ghost" id="addBatch"><i class="fa-solid fa-layer-group"></i> Ajouter au lot (plusieurs patchs dans le même embed)</button>
           </form>
+        </div>
+        <div class="card" id="batchCard" hidden>
+          <div class="card-header"><div class="card-title"><i class="fa-solid fa-layer-group"></i> Lot en cours : un seul embed <span class="muted" id="batchCount"></span></div></div>
+          <div id="batchList"></div>
+          <div class="row" style="margin-top:12px">
+            <button type="button" class="btn btn-primary" id="batchPublish" style="flex:1"><i class="fa-solid fa-paper-plane"></i> Publier le lot sur Discord</button>
+            <button type="button" class="btn-secondary danger" id="batchClear">Vider</button>
+          </div>
         </div>
         <div class="card">
           <div class="card-header"><div class="card-title"><i class="fa-solid fa-clock-rotate-left"></i> Historique des Modifications</div></div>
@@ -226,12 +239,13 @@ dialog::backdrop{background:rgba(0,0,0,.7)}
           <div class="card-header"><div class="card-title"><i class="fa-brands fa-discord"></i> Aperçu Discord Embed</div></div>
           <div class="discord-preview">
             <div class="discord-bot">VALONGO BOT</div>
-            <div class="discord-title">🛠️ PATCH NOTE - VALONGO </div>
+            <div class="discord-title">🛠️ PATCH NOTE - VALONGO USA</div>
             <div style="font-size:12px;color:#dcddde"><b id="prevType">Script: </b><span id="prevName"></span></div>
             <div class="discord-field"><div class="discord-field-name">STATUT</div><div class="discord-field-val" id="prevStatus"></div></div>
             <div class="discord-field" id="prevAvailBox"><div class="discord-field-name">DISPONIBILITÉ</div><div class="discord-field-val" id="prevAvail"></div></div>
             <div class="discord-field"><div class="discord-field-name">DÉTAILS / RAISONS</div><div class="discord-field-val" id="prevReason"></div></div>
             <div class="discord-field"><div class="discord-field-name">DÉVELOPPEUR &amp; DATE</div><div class="discord-field-val" id="prevFooter"></div></div>
+            <div id="prevBatch" hidden></div>
             <img class="js-banner" alt="Bannière Discord" referrerpolicy="no-referrer">
           </div>
           <button type="button" class="btn btn-discord" id="copyBtn"><i class="fa-solid fa-copy"></i> Copier le texte brut Discord</button>
@@ -268,6 +282,20 @@ dialog::backdrop{background:rgba(0,0,0,.7)}
         <label class="form-label" for="bannerInput">URL de l'Image de Bannière Discord Embed</label>
         <input type="url" class="form-control" id="bannerInput" placeholder="https://...">
       </div>
+    </div>
+
+    <div class="card" style="max-width:600px">
+      <div class="card-header"><div class="card-title"><i class="fa-solid fa-people-group"></i> Synchronisation d'équipe</div></div>
+      <div class="form-group">
+        <label class="form-label" for="syncUrl">URL Firebase Realtime Database</label>
+        <input type="url" class="form-control" id="syncUrl" placeholder="https://xxxx-default-rtdb.europe-west1.firebasedatabase.app" autocomplete="off">
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="syncSpace">Code d'équipe (identique pour tout le monde)</label>
+        <input type="text" class="form-control" id="syncSpace" placeholder="valongo" maxlength="40" autocomplete="off">
+        <span class="muted" style="font-size:11px;margin-top:6px;display:block">Patch notes, développeurs, assets ajoutés et bannière sont partagés. Le webhook Discord reste propre à chaque navigateur. Laisse l'URL vide pour revenir en mode local.</span>
+      </div>
+      <button type="button" class="btn btn-primary" id="syncBtn"><i class="fa-solid fa-rotate"></i> Enregistrer &amp; synchroniser</button>
     </div>
   </section>
 </main>
@@ -471,7 +499,7 @@ const RAW = [
   ["mendestossss","thetown","m"],
   ["_SubhamPRO","Modern Housing Shell 01","m"],
   ["SpicyTastyst","PropsChristmas","m"],
-  ["SpicyTastyst","bleProps","m"],
+  ["SpicyTastyst","UsableProps","m"],
   ["NTeamDevelopment","NTeam Development Halloween Decoration","m"],
   ["lucas556","Seiko_LTD-Job","s"],
   ["insMaps","Davis Shm","m"],
@@ -719,8 +747,11 @@ const STATUS = {
 };
 const CUSTOM = '__custom';
 const AVAIL = ['🟢 Disponible maintenant', '🔄 Au prochain restart', '⛈️ Prochaine tempête', '🕒 Prochainement'];
+const DEFAULT_SYNC = { url: '', space: 'valongo' }; // optionnel : pré-remplis ici l'URL pour que toute l'équipe n'ait rien à saisir
+const SYNC_RE = /^https:\/\/[\w.-]+\.(?:firebaseio\.com|firebasedatabase\.app)$/;
+const DEFAULT_DEVS = ['Mendestoss', 'Alex', 'Jordan', 'Lucas'];
 const HOOK_RE = /^https:\/\/(?:(?:ptb|canary)\.)?discord(?:app)?\.com\/api\/webhooks\/\d+\/[\w-]+/;
-const K = { custom: 'valongo_custom_assets', legacy: 'valongo_assets', patchs: 'valongo_patchs', devs: 'valongo_devs_list', dev: 'valongo_selected_dev', hook: 'valongo_webhook', banner: 'valongo_banner_url' };
+const K = { custom: 'valongo_custom_assets', legacy: 'valongo_assets', patchs: 'valongo_patchs', devs: 'valongo_devs_list', dev: 'valongo_selected_dev', hook: 'valongo_webhook', banner: 'valongo_banner_url', batch: 'valongo_batch', sync: 'valongo_sync_url', space: 'valongo_sync_space' };
 
 /* ---------- Helpers ---------- */
 const $ = (s, r = document) => r.querySelector(s);
@@ -735,6 +766,8 @@ const raw = {
 };
 const load = (k, d) => { try { return JSON.parse(raw.get(k)) ?? d; } catch { return d; } };
 const save = (k, v) => raw.set(k, JSON.stringify(v));
+const newId = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+const hid = s => { let h = 5381; for (const c of s) h = ((h << 5) + h + c.charCodeAt(0)) | 0; return (h >>> 0).toString(36); };
 const keyOf = a => `${a.author}::${a.name}`;
 
 /* Nom affiché sur l'embed : retire le nom du créateur / les crédits (ex. "Crux - X", "X - kiiya", "X - FR Leaks/FS Developement") */
@@ -775,10 +808,14 @@ if (!Array.isArray(custom)) custom = [];
 let patchs = load(K.patchs, null);
 if (!Array.isArray(patchs)) patchs = [{
   script: 'Smartphone PRO [main]', assetType: 'Script', status: 'Fini / Corrigé', dev: 'Mendestoss', date: '21/10/2026 à 18:30',
-  reason: "Configuration initiale des cartes SIM  (AT&T / Verizon).\nTraduction intégrale en français des applications de base."
+  reason: "Configuration initiale des cartes SIM USA (AT&T / Verizon).\nTraduction intégrale en français des applications de base."
 }];
+patchs.forEach(p => { p.id ||= newId(); p.ts ||= 0; });
 let devs = load(K.devs, null);
-if (!Array.isArray(devs) || !devs.length) devs = ['Mendestoss', 'Alex', 'Jordan', 'Lucas'];
+if (!Array.isArray(devs) || !devs.length) devs = [...DEFAULT_DEVS];
+
+let batch = load(K.batch, []);
+if (!Array.isArray(batch)) batch = [];
 
 const state = { type: 'Script', cat: 'all', sorted: [], byKey: new Map() };
 
@@ -849,6 +886,15 @@ function renderPatches() {
   }).join('') : '<p class="muted">Aucun patch note enregistré.</p>';
 }
 
+function renderBatch() {
+  $('#batchCard').hidden = !batch.length;
+  $('#batchCount').textContent = `(${batch.length})`;
+  $('#batchList').innerHTML = batch.map((b, i) => `
+    <div class="dev-item"><span>${esc(STATUS[b.status]?.label.split(' ')[0] ?? '📌')} ${esc(b.script)} <span class="muted">• ${esc(b.dev)}</span></span>
+      <button class="btn-secondary danger" data-rmb="${i}" aria-label="Retirer du lot"><i class="fa-solid fa-xmark"></i></button></div>`).join('');
+  updatePreview();
+}
+
 function renderStats() {
   $('#statAssets').textContent = state.sorted.length;
   $('#statDone').textContent = patchs.filter(p => p.status === 'Fini / Corrigé').length;
@@ -877,6 +923,10 @@ function updatePreview() {
   $('#prevType').textContent = `${f.assetType}: `;
   $('#prevName').textContent = f.script || 'Nom du script';
   $('#prevStatus').textContent = STATUS[f.status]?.label ?? f.status;
+  const pb = $('#prevBatch');
+  pb.hidden = !batch.length;
+  pb.innerHTML = batch.length ? `<div class="discord-field-name" style="margin-top:12px">LOT EN COURS (${batch.length}) : 1 SEUL EMBED</div>` + batch.map(b =>
+    `<div class="discord-field"><div class="discord-field-name">${esc((STATUS[b.status]?.label.split(' ')[0] ?? '📌') + ' ' + b.assetType + ': ' + b.script)}</div><div class="discord-field-val">${esc(clip(b.reason, 120))}</div></div>`).join('') : '';
   $('#prevAvailBox').hidden = !f.availability;
   $('#prevAvail').textContent = f.availability;
   $('#prevReason').textContent = f.reason || 'Explication des changements...';
@@ -897,50 +947,91 @@ function applyBanner() {
 /* ---------- Actions ---------- */
 function saveDevs() {
   save(K.devs, devs);
+  cloud.writeDevs();
   renderDevSelect(); renderDevList(); updatePreview();
 }
 
-async function sendWebhook(p) {
+const fieldOf = p => ({
+  name: clip(`${STATUS[p.status]?.label.split(' ')[0] ?? '📌'} ${p.assetType || 'Script'}: ${p.script}`, 256),
+  value: clip(`${p.availability ? `🕒 ${p.availability}\n` : ''}${p.reason}\n👨‍💻 ${p.dev}`, 1024)
+});
+
+async function sendWebhook(list) {
   const url = (raw.get(K.hook) || '').trim();
   if (!url) return 'none';
   if (!HOOK_RE.test(url)) return false;
-  const s = STATUS[p.status];
-  const embed = {
-    title: '🛠️ VALONGO RP - PATCH NOTE',
-    color: s?.color ?? 0x3b82f6,
-    fields: [
-      { name: `📦 ${(p.assetType || 'Script').toUpperCase()}`, value: clip(`\`${p.script}\``, 1024) },
-      { name: '📌 STATUT', value: s?.label ?? p.status, inline: true },
-      { name: '👨‍💻 DÉVELOPPEUR', value: clip(p.dev, 1024), inline: true },
-      ...(p.availability ? [{ name: '🕒 DISPONIBILITÉ', value: clip(p.availability, 1024) }] : []),
-      { name: '📝 MODIFICATIONS / DÉTAILS', value: clip(p.reason, 1024) }
-    ],
-    footer: { text: `Valongo  RP • ${p.date}` },
-    timestamp: new Date().toISOString()
-  };
+  const footer = { text: `Valongo USA RP • ${list[0].date}` }, timestamp = new Date().toISOString();
+  let messages;
+  if (list.length === 1) {
+    const p = list[0], s = STATUS[p.status];
+    messages = [[{
+      title: '🛠️ VALONGO RP - PATCH NOTE',
+      color: s?.color ?? 0x3b82f6,
+      fields: [
+        { name: `📦 ${(p.assetType || 'Script').toUpperCase()}`, value: clip(`\`${p.script}\``, 1024) },
+        { name: '📌 STATUT', value: s?.label ?? p.status, inline: true },
+        { name: '👨‍💻 DÉVELOPPEUR', value: clip(p.dev, 1024), inline: true },
+        ...(p.availability ? [{ name: '🕒 DISPONIBILITÉ', value: clip(p.availability, 1024) }] : []),
+        { name: '📝 MODIFICATIONS / DÉTAILS', value: clip(p.reason, 1024) }
+      ],
+      footer, timestamp
+    }]];
+  } else {
+    // Limites Discord : 25 champs et ~6000 caractères par message -> découpe automatique si besoin
+    const chunks = []; let cur = [], size = 0;
+    for (const f of list.map(fieldOf)) {
+      const len = f.name.length + f.value.length;
+      if (cur.length && (cur.length >= 25 || size + len > 5000)) { chunks.push(cur); cur = []; size = 0; }
+      cur.push(f); size += len;
+    }
+    chunks.push(cur);
+    messages = chunks.map((fields, i) => [{
+      title: '🛠️ VALONGO RP - PATCH NOTES' + (chunks.length > 1 ? ` (${i + 1}/${chunks.length})` : ''),
+      color: 0x1e60ff, fields, footer, timestamp
+    }]);
+  }
   const banner = bannerUrl();
-  if (/^https?:\/\//.test(banner)) embed.image = { url: banner };
+  if (/^https?:\/\//.test(banner)) messages[messages.length - 1][0].image = { url: banner };
   try {
-    const r = await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username: 'Valongo Dev Bot', embeds: [embed] })
-    });
-    return r.ok;
+    for (const embeds of messages) {
+      const r = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username: 'Valongo Dev Bot', embeds })
+      });
+      if (!r.ok) return false;
+    }
+    return true;
   } catch { return false; }
+}
+
+async function publishBatch() {
+  if (!batch.length) return;
+  const date = stamp(), now = Date.now(), n = batch.length;
+  const items = batch.map((b, i) => ({ ...b, id: newId(), ts: now - i, date }));
+  patchs.unshift(...items);
+  save(K.patchs, patchs);
+  batch = []; save(K.batch, batch);
+  renderPatches(); renderStats(); renderBatch();
+  items.forEach(p => cloud.write('PUT', `patchs/${p.id}`, p));
+  const r = await sendWebhook(items);
+  if (r === 'none') toast(`✅ ${n} patch notes enregistrés (aucun webhook configuré).`);
+  else if (r) toast(`✅ ${n} patch notes enregistrés et envoyés dans un seul embed !`);
+  else toast("⚠️ Patchs enregistrés, mais l'envoi Discord a échoué (vérifie l'URL du webhook).", false);
 }
 
 async function addPatch(e) {
   e.preventDefault();
   if (!selected()) return toast('Sélectionne un script ou un mapping.', false);
   const f = formData();
-  const patch = { script: f.script, assetType: f.assetType, status: f.status, dev: f.dev, date: stamp(), availability: f.availability, reason: f.reason };
+  const patch = { id: newId(), ts: Date.now(), script: f.script, assetType: f.assetType, status: f.status, dev: f.dev, date: stamp(), availability: f.availability, reason: f.reason };
   patchs.unshift(patch);
   save(K.patchs, patchs);
+  cloud.write('PUT', `patchs/${patch.id}`, patch);
   renderPatches(); renderStats();
   $('#patchReason').value = '';
   updatePreview();
-  const r = await sendWebhook(patch);
+  const r = await sendWebhook([patch]);
   if (r === 'none') toast('✅ Patch note enregistré (aucun webhook configuré).');
   else if (r) toast('✅ Patch note enregistré et envoyé sur Discord !');
   else toast("⚠️ Patch enregistré, mais l'envoi Discord a échoué (vérifie l'URL du webhook).", false);
@@ -948,7 +1039,10 @@ async function addPatch(e) {
 
 async function copyDiscord() {
   const f = formData();
-  const text = `**🛠️ [VALONGO RP] PATCH NOTE**\n> **${f.assetType}:** \`${f.script || 'Nom du script'}\`\n> **Statut:** ${STATUS[f.status]?.label ?? f.status}\n> **Dev:** ${f.dev}\n> **Date:** ${f.date}\n${f.availability ? `> **Disponibilité:** ${f.availability}\n` : ''}\n**Détails:**\n\`\`\`\n${f.reason || '...'}\n\`\`\``;
+  const single = `**🛠️ [VALONGO RP] PATCH NOTE**\n> **${f.assetType}:** \`${f.script || 'Nom du script'}\`\n> **Statut:** ${STATUS[f.status]?.label ?? f.status}\n> **Dev:** ${f.dev}\n> **Date:** ${f.date}\n${f.availability ? `> **Disponibilité:** ${f.availability}\n` : ''}\n**Détails:**\n\`\`\`\n${f.reason || '...'}\n\`\`\``;
+  const text = batch.length
+    ? `**🛠️ [VALONGO RP] PATCH NOTES**\n> **Date:** ${f.date}\n\n` + batch.map(b => `**${STATUS[b.status]?.label ?? b.status}** : \`${b.script}\` (${b.assetType}) • ${b.dev}${b.availability ? `\n🕒 ${b.availability}` : ''}\n\`\`\`\n${b.reason}\n\`\`\``).join('\n')
+    : single;
   try {
     await navigator.clipboard.writeText(text);
     toast('📋 Copié dans le presse-papier !');
@@ -967,6 +1061,84 @@ function tick() {
   const s = stamp(d), input = $('#patchDate');
   if (input.value !== s) { input.value = s; updatePreview(); }
 }
+
+/* ---------- Synchronisation d'équipe (Firebase Realtime Database via REST) ---------- */
+function setSync(ok) {
+  $('#syncState').textContent = ok === null ? '⚪ Mode local' : ok ? '🟢 Équipe synchronisée' : '🔴 Sync interrompue';
+}
+
+function renderAll() {
+  renderSelect(); renderCatalogue(); renderPatches(); renderStats(); renderDevSelect(); applyBanner();
+  if ($('#devDlg').open) renderDevList();
+  $('#bannerInput').value = raw.get(K.banner) || '';
+  updatePreview();
+}
+
+const cloud = {
+  base: '', space: '', sig: '', busy: 0, timer: 0,
+  on() { return !!this.base; },
+  url(path) { return `${this.base}/${[this.space, path].filter(Boolean).join('/')}.json`; },
+  async req(method, path, body) {
+    const r = await fetch(this.url(path), { method, headers: { 'Content-Type': 'application/json' }, body: body === undefined ? undefined : JSON.stringify(body) });
+    if (!r.ok) throw new Error(r.status);
+    return r.json();
+  },
+  async write(method, path, body) {
+    if (!this.on()) return;
+    this.busy++;
+    try { await this.req(method, path, body); setSync(true); }
+    catch { setSync(false); toast('⚠️ Synchro équipe impossible : enregistré en local seulement.', false); }
+    finally { this.busy--; }
+  },
+  devMap: () => Object.fromEntries(devs.map((n, i) => [hid(n), { name: n, ts: i }])),
+  writeDevs() { return this.write('PUT', 'devs', this.devMap()); },
+  start(url, space) {
+    this.base = url; this.space = space; this.sig = '';
+    clearInterval(this.timer);
+    this.timer = setInterval(() => { if (!document.hidden) this.pull(); }, 6000);
+  },
+  stop() { clearInterval(this.timer); this.base = ''; this.sig = ''; setSync(null); },
+  async seed() {
+    const body = { patchs: Object.fromEntries(patchs.map(p => [p.id, p])), devs: this.devMap(), assets: Object.fromEntries(custom.map(a => [hid(keyOf(a)), a])) };
+    const b = raw.get(K.banner);
+    if (b) body.banner = b;
+    await this.req('PUT', '', body);
+  },
+  async pull() {
+    if (!this.on() || this.busy) return false;
+    try {
+      const d = (await this.req('GET', '')) || {};
+      setSync(true);
+      if (!Object.keys(d).length) { await this.seed(); return true; }
+      const sig = JSON.stringify(d);
+      if (sig === this.sig) return true;
+      const first = !this.sig, known = new Set(patchs.map(p => p.id));
+      this.sig = sig;
+      patchs = Object.entries(d.patchs || {}).map(([id, p]) => ({ ...p, id })).sort((a, b) => (b.ts || 0) - (a.ts || 0));
+      devs = Object.values(d.devs || {}).sort((a, b) => (a.ts || 0) - (b.ts || 0)).map(x => x.name);
+      if (!devs.length) devs = [...DEFAULT_DEVS];
+      custom = Object.values(d.assets || {}).filter(a => a && a.name);
+      d.banner ? raw.set(K.banner, d.banner) : raw.del(K.banner);
+      save(K.patchs, patchs); save(K.devs, devs); save(K.custom, custom);
+      rebuildAssets(); renderAll();
+      const fresh = patchs.filter(p => !known.has(p.id)).length;
+      if (!first && fresh) toast(`🔔 ${fresh} nouveau${fresh > 1 ? 'x' : ''} patch note${fresh > 1 ? 's' : ''} de l'équipe`);
+      return true;
+    } catch { setSync(false); return false; }
+  }
+};
+
+$('#syncBtn').addEventListener('click', async () => {
+  const url = $('#syncUrl').value.trim().replace(/\/+$/, ''), space = $('#syncSpace').value.trim() || 'valongo';
+  if (!url) { raw.del(K.sync); cloud.stop(); return toast('Synchronisation désactivée (mode local).'); }
+  if (!SYNC_RE.test(url)) return toast('URL invalide : elle doit ressembler à https://xxx.firebasedatabase.app', false);
+  if (!/^[\w-]+$/.test(space)) return toast("Code d'équipe : lettres, chiffres, - et _ uniquement.", false);
+  raw.set(K.sync, url); raw.set(K.space, space);
+  cloud.start(url, space);
+  const ok = await cloud.pull();
+  toast(ok ? '🟢 Synchronisation active.' : "❌ Connexion impossible : vérifie l'URL et les règles de la base (lecture/écriture).", ok);
+});
+document.addEventListener('visibilitychange', () => { if (!document.hidden) cloud.pull(); });
 
 /* ---------- Événements ---------- */
 $('nav').addEventListener('click', e => {
@@ -1011,12 +1183,36 @@ $('#patchDev').addEventListener('change', e => {
 });
 $('#patchForm').addEventListener('submit', addPatch);
 $('#copyBtn').addEventListener('click', copyDiscord);
+$('#addBatch').addEventListener('click', () => {
+  if (!$('#patchForm').reportValidity()) return;
+  if (!selected()) return toast('Sélectionne un script ou un mapping.', false);
+  if (batch.length >= 25) return toast('Maximum 25 patchs par lot.', false);
+  const { script, assetType, status, dev, availability, reason } = formData();
+  batch.push({ script, assetType, status, dev, availability, reason });
+  save(K.batch, batch);
+  $('#patchReason').value = '';
+  renderBatch();
+  toast(`➕ Ajouté au lot (${batch.length}).`);
+});
+$('#batchList').addEventListener('click', e => {
+  const b = e.target.closest('[data-rmb]');
+  if (!b) return;
+  batch.splice(Number(b.dataset.rmb), 1);
+  save(K.batch, batch);
+  renderBatch();
+});
+$('#batchClear').addEventListener('click', () => {
+  if (!confirm('Vider le lot en cours ?')) return;
+  batch = []; save(K.batch, batch); renderBatch();
+});
+$('#batchPublish').addEventListener('click', publishBatch);
 $('#catSearch').addEventListener('input', debounce(renderCatalogue));
 
 $('#patchList').addEventListener('click', e => {
   const b = e.target.closest('[data-del]');
   if (!b || !confirm('Supprimer ce patch note ?')) return;
-  patchs.splice(Number(b.dataset.del), 1);
+  const [gone] = patchs.splice(Number(b.dataset.del), 1);
+  if (gone) cloud.write('DELETE', `patchs/${gone.id}`);
   save(K.patchs, patchs);
   renderPatches(); renderStats();
 });
@@ -1025,6 +1221,7 @@ $('#catGrid').addEventListener('click', e => {
   const b = e.target.closest('[data-del]');
   if (!b || !confirm('Supprimer cet asset personnalisé ?')) return;
   custom = custom.filter(a => keyOf(a) !== b.dataset.del);
+  cloud.write('DELETE', `assets/${hid(b.dataset.del)}`);
   save(K.custom, custom);
   rebuildAssets(); renderSelect(); renderCatalogue(); renderStats(); onAssetChange();
 });
@@ -1034,6 +1231,7 @@ $('#bannerInput').addEventListener('input', e => {
   const v = e.target.value.trim();
   if (/discord(?:app)?\.com\/channels\//i.test(v)) return toast("Ce lien est celui d'un message, pas d'une image : fais clic droit sur l'image > Copier le lien de l'image.", false);
   v ? raw.set(K.banner, v) : raw.del(K.banner);
+  cloud.write(v ? 'PUT' : 'DELETE', 'banner', v || undefined);
   applyBanner();
 });
 $$('.js-banner').forEach(img => img.addEventListener('error', () => { img.hidden = true; }));
@@ -1077,6 +1275,7 @@ $('#assetForm').addEventListener('submit', e => {
   if (state.byKey.has(keyOf(asset))) return toast('Cet asset existe déjà.', false);
   custom.push(asset);
   save(K.custom, custom);
+  cloud.write('PUT', `assets/${hid(keyOf(asset))}`, asset);
   rebuildAssets(); renderSelect(); renderCatalogue(); renderStats();
   e.target.reset();
   $('#assetDlg').close();
@@ -1090,7 +1289,11 @@ $('#hookInput').value = raw.get(K.hook) || '';
 $('#bannerInput').value = raw.get(K.banner) || '';
 rebuildAssets();
 applyBanner();
-renderDevSelect(); renderSelect(); renderCatalogue(); renderPatches(); renderStats();
+renderDevSelect(); renderSelect(); renderCatalogue(); renderPatches(); renderStats(); renderBatch();
+const syncUrl = raw.get(K.sync) || DEFAULT_SYNC.url;
+$('#syncUrl').value = syncUrl;
+$('#syncSpace').value = raw.get(K.space) || DEFAULT_SYNC.space;
+if (SYNC_RE.test(syncUrl)) { cloud.start(syncUrl, $('#syncSpace').value || 'valongo'); cloud.pull(); }
 tick(); setInterval(tick, 1000);
 setType('Script');
 })();
