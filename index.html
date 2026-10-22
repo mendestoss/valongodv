@@ -152,6 +152,7 @@ dialog::backdrop{background:rgba(0,0,0,.7)}
   </div>
   <nav>
     <button class="nav-btn active" data-tab="patchs"><i class="fa-solid fa-code-commit"></i> Patch Notes</button>
+    <button class="nav-btn" data-tab="annonces"><i class="fa-solid fa-bullhorn"></i> Annonces</button>
     <button class="nav-btn" data-tab="catalogue"><i class="fa-solid fa-boxes-stacked"></i> Catalogue Assets</button>
     <button class="nav-btn" data-tab="settings"><i class="fa-solid fa-gears"></i> Webhook Discord</button>
   </nav>
@@ -254,6 +255,51 @@ dialog::backdrop{background:rgba(0,0,0,.7)}
     </div>
   </section>
 
+  <!-- ANNONCES -->
+  <section id="tab-annonces" class="tab-content">
+    <div class="grid">
+      <div>
+        <div class="card">
+          <div class="card-header"><div class="card-title"><i class="fa-solid fa-bullhorn"></i> Nouvelle annonce serveur</div></div>
+          <form id="annForm">
+            <div class="form-row">
+              <div class="form-group"><label class="form-label" for="annType">Type d'annonce</label><select class="form-select" id="annType"></select></div>
+              <div class="form-group"><label class="form-label" for="annMention">Mention</label>
+                <select class="form-select" id="annMention"><option value="">Aucune</option><option value="@here">@here</option><option value="@everyone">@everyone</option></select></div>
+            </div>
+            <div class="form-group"><label class="form-label" for="annTitle">Titre</label><input type="text" class="form-control" id="annTitle" required maxlength="150" placeholder="Ex: Maintenance ce soir à 22h"></div>
+            <div class="form-group"><label class="form-label" for="annMsg">Message</label><textarea class="form-control" id="annMsg" required maxlength="2000" style="min-height:140px" placeholder="Contenu de l'annonce..."></textarea></div>
+            <div class="form-row">
+              <div class="form-group"><label class="form-label" for="annDate">Date / heure (optionnel)</label><input type="datetime-local" class="form-control" id="annDate"></div>
+              <div class="form-group"><label class="form-label" for="annDev">Publié par</label><select class="form-select" id="annDev"></select></div>
+            </div>
+            <div class="form-group"><label class="form-label" for="annImage">Image (URL, optionnel)</label><input type="url" class="form-control" id="annImage" placeholder="https://..."></div>
+            <button type="submit" class="btn btn-primary"><i class="fa-solid fa-bullhorn"></i> Publier l'annonce sur Discord</button>
+          </form>
+        </div>
+        <div class="card">
+          <div class="card-header"><div class="card-title"><i class="fa-solid fa-clock-rotate-left"></i> Historique des annonces</div></div>
+          <div id="annList"></div>
+        </div>
+      </div>
+      <div>
+        <div class="card" style="position:sticky;top:32px">
+          <div class="card-header"><div class="card-title"><i class="fa-brands fa-discord"></i> Aperçu de l'annonce</div></div>
+          <div class="discord-field-val" id="annPrevMention" style="margin-bottom:6px" hidden></div>
+          <div class="discord-preview" id="annPrev">
+            <div class="discord-bot" id="annPrevAuthor"></div>
+            <div class="discord-title" id="annPrevTitle"></div>
+            <div class="discord-field-val" id="annPrevBody" style="font-size:13px"></div>
+            <div class="discord-field" id="annPrevWhenBox"><div class="discord-field-name">🗓️ DATE</div><div class="discord-field-val" id="annPrevWhen"></div></div>
+            <img id="annPrevImg" alt="" hidden referrerpolicy="no-referrer">
+            <div class="discord-field-name" style="margin-top:10px;font-weight:400;text-transform:none" id="annPrevFooter"></div>
+          </div>
+          <button type="button" class="btn btn-discord" id="annCopy"><i class="fa-solid fa-copy"></i> Copier le texte brut Discord</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <!-- CATALOGUE -->
   <section id="tab-catalogue" class="tab-content">
     <div class="card">
@@ -277,6 +323,11 @@ dialog::backdrop{background:rgba(0,0,0,.7)}
         <label class="form-label" for="hookInput">URL du Webhook Discord (Salon Patch Notes)</label>
         <input type="url" class="form-control" id="hookInput" placeholder="https://discord.com/api/webhooks/..." autocomplete="off">
         <span class="muted" style="font-size:11px;margin-top:6px;display:block">Le webhook est enregistré localement sur votre navigateur.</span>
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="annHookInput">URL du Webhook Discord (Salon Annonces)</label>
+        <input type="url" class="form-control" id="annHookInput" placeholder="https://discord.com/api/webhooks/..." autocomplete="off">
+        <span class="muted" style="font-size:11px;margin-top:6px;display:block">Webhook dédié aux annonces serveur, distinct de celui des patch notes.</span>
       </div>
       <div class="form-group">
         <label class="form-label" for="bannerInput">URL de l'Image de Bannière Discord Embed</label>
@@ -750,8 +801,15 @@ const AVAIL = ['🟢 Disponible maintenant', '🔄 Au prochain restart', '⛈️
 const DEFAULT_SYNC = { url: '', space: 'valongo' }; // optionnel : pré-remplis ici l'URL pour que toute l'équipe n'ait rien à saisir
 const SYNC_RE = /^https:\/\/[\w.-]+\.(?:firebaseio\.com|firebasedatabase\.app)$/;
 const DEFAULT_DEVS = ['Mendestoss', 'Alex', 'Jordan', 'Lucas'];
+const ANN = {
+  info:   { label: '📢 Information', color: 0x1e60ff },
+  maint:  { label: '🔧 Maintenance', color: 0xf59e0b },
+  event:  { label: '🎉 Événement', color: 0x8b5cf6 },
+  maj:    { label: '🆕 Mise à jour', color: 0x10b981 },
+  urgent: { label: '🚨 Urgent', color: 0xef4444 }
+};
 const HOOK_RE = /^https:\/\/(?:(?:ptb|canary)\.)?discord(?:app)?\.com\/api\/webhooks\/\d+\/[\w-]+/;
-const K = { custom: 'valongo_custom_assets', legacy: 'valongo_assets', patchs: 'valongo_patchs', devs: 'valongo_devs_list', dev: 'valongo_selected_dev', hook: 'valongo_webhook', banner: 'valongo_banner_url', batch: 'valongo_batch', sync: 'valongo_sync_url', space: 'valongo_sync_space' };
+const K = { custom: 'valongo_custom_assets', legacy: 'valongo_assets', patchs: 'valongo_patchs', devs: 'valongo_devs_list', dev: 'valongo_selected_dev', hook: 'valongo_webhook', banner: 'valongo_banner_url', batch: 'valongo_batch', ann: 'valongo_annonces', annHook: 'valongo_ann_webhook', sync: 'valongo_sync_url', space: 'valongo_sync_space' };
 
 /* ---------- Helpers ---------- */
 const $ = (s, r = document) => r.querySelector(s);
@@ -816,6 +874,10 @@ if (!Array.isArray(devs) || !devs.length) devs = [...DEFAULT_DEVS];
 
 let batch = load(K.batch, []);
 if (!Array.isArray(batch)) batch = [];
+
+let annonces = load(K.ann, []);
+if (!Array.isArray(annonces)) annonces = [];
+annonces.forEach(a => { a.id ||= newId(); a.ts ||= 0; });
 
 const state = { type: 'Script', cat: 'all', sorted: [], byKey: new Map() };
 
@@ -906,6 +968,9 @@ function renderDevSelect() {
   sel.replaceChildren(...devs.map(d => new Option(d, d)));
   sel.value = devs.includes(want) ? want : devs[0];
   $('#devName').textContent = sel.value;
+  const as = $('#annDev'), prevA = as.value;
+  as.replaceChildren(...devs.map(d => new Option(d, d)));
+  as.value = devs.includes(prevA) ? prevA : sel.value;
 }
 
 function renderDevList() {
@@ -1043,6 +1108,10 @@ async function copyDiscord() {
   const text = batch.length
     ? `**🛠️ [VALONGO RP] PATCH NOTES**\n> **Date:** ${f.date}\n\n` + batch.map(b => `**${STATUS[b.status]?.label ?? b.status}** : \`${b.script}\` (${b.assetType}) • ${b.dev}${b.availability ? `\n🕒 ${b.availability}` : ''}\n\`\`\`\n${b.reason}\n\`\`\``).join('\n')
     : single;
+  return copyText(text);
+}
+
+async function copyText(text) {
   try {
     await navigator.clipboard.writeText(text);
     toast('📋 Copié dans le presse-papier !');
@@ -1059,8 +1128,120 @@ function tick() {
   const d = new Date();
   $('#clock').textContent = d.toLocaleString('fr-FR', { weekday: 'short', day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' }).toUpperCase();
   const s = stamp(d), input = $('#patchDate');
-  if (input.value !== s) { input.value = s; updatePreview(); }
+  if (input.value !== s) { input.value = s; updatePreview(); updateAnnPreview(); }
 }
+
+/* ---------- Annonces serveur (webhook dédié) ---------- */
+const hex = c => '#' + c.toString(16).padStart(6, '0');
+const annEmoji = t => t.label.split(' ')[0];
+const annName = t => t.label.split(' ').slice(1).join(' ');
+
+function annData() {
+  const dt = $('#annDate').value;
+  return {
+    type: $('#annType').value,
+    title: $('#annTitle').value.trim(),
+    message: $('#annMsg').value.trim(),
+    when: dt ? new Date(dt).toLocaleString('fr-FR', { dateStyle: 'full', timeStyle: 'short' }) : '',
+    mention: $('#annMention').value,
+    image: $('#annImage').value.trim(),
+    dev: $('#annDev').value || devs[0]
+  };
+}
+
+function updateAnnPreview() {
+  const a = annData(), t = ANN[a.type] ?? ANN.info, img = $('#annPrevImg'), okImg = /^https?:\/\//.test(a.image);
+  $('#annPrev').style.borderLeftColor = hex(t.color);
+  $('#annPrevMention').hidden = !a.mention;
+  $('#annPrevMention').textContent = a.mention;
+  $('#annPrevAuthor').textContent = `VALONGO RP • ${annName(t).toUpperCase()}`;
+  $('#annPrevTitle').textContent = `${annEmoji(t)} ${a.title || "Titre de l'annonce"}`;
+  $('#annPrevBody').textContent = a.message || "Contenu de l'annonce...";
+  $('#annPrevWhenBox').hidden = !a.when;
+  $('#annPrevWhen').textContent = a.when;
+  $('#annPrevFooter').textContent = `Publié par ${a.dev} • ${stamp()}`;
+  img.hidden = !okImg;
+  if (okImg && img.getAttribute('src') !== a.image) img.src = a.image;
+}
+
+function renderAnnonces() {
+  $('#annList').innerHTML = annonces.length ? annonces.map((a, i) => {
+    const t = ANN[a.type] ?? ANN.info, c = hex(t.color);
+    return `
+    <div class="patch-item">
+      <div class="patch-header">
+        <div class="patch-script">${esc(annEmoji(t))} ${esc(a.title)}</div>
+        <span class="badge" style="color:${c};background:${c}26">${esc(annName(t))}</span>
+      </div>
+      ${a.when ? `<div class="avail">🗓️ ${esc(a.when)}</div>` : ''}
+      <div class="patch-desc">${esc(a.message)}</div>
+      <div class="patch-footer">
+        <div class="patch-dev"><i class="fa-solid fa-user-ninja"></i> ${esc(a.dev)}</div>
+        <div><i class="fa-regular fa-clock"></i> ${esc(a.date)} <button class="btn-secondary danger" data-delann="${i}" aria-label="Supprimer cette annonce"><i class="fa-solid fa-trash"></i></button></div>
+      </div>
+    </div>`;
+  }).join('') : '<p class="muted">Aucune annonce enregistrée.</p>';
+}
+
+async function sendAnnonce(a) {
+  const url = (raw.get(K.annHook) || '').trim();
+  if (!url) return 'none';
+  if (!HOOK_RE.test(url)) return false;
+  const t = ANN[a.type] ?? ANN.info;
+  const embed = {
+    author: { name: `VALONGO RP • ${annName(t).toUpperCase()}` },
+    title: clip(`${annEmoji(t)} ${a.title}`, 256),
+    description: clip(a.message, 4000),
+    color: t.color,
+    footer: { text: `Publié par ${a.dev} • ${a.date}` },
+    timestamp: new Date().toISOString()
+  };
+  if (a.when) embed.fields = [{ name: '🗓️ DATE', value: clip(a.when, 1024) }];
+  if (/^https?:\/\//.test(a.image)) embed.image = { url: a.image };
+  const body = { username: 'Valongo Annonces', embeds: [embed] };
+  if (a.mention) { body.content = a.mention; body.allowed_mentions = { parse: ['everyone'] }; }
+  try {
+    const r = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+    return r.ok;
+  } catch { return false; }
+}
+
+$('#annType').replaceChildren(...Object.entries(ANN).map(([v, t]) => new Option(t.label, v)));
+['annType', 'annMention', 'annTitle', 'annMsg', 'annDate', 'annImage', 'annDev'].forEach(id => $('#' + id).addEventListener('input', updateAnnPreview));
+$('#annPrevImg').addEventListener('error', e => { e.target.hidden = true; });
+$('#annHookInput').addEventListener('input', e => raw.set(K.annHook, e.target.value.trim()));
+
+$('#annForm').addEventListener('submit', async e => {
+  e.preventDefault();
+  const a = annData();
+  if (a.mention && !confirm(`Envoyer cette annonce avec ${a.mention} ?`)) return;
+  const item = { ...a, id: newId(), ts: Date.now(), date: stamp() };
+  annonces.unshift(item);
+  save(K.ann, annonces);
+  cloud.write('PUT', `annonces/${item.id}`, item);
+  renderAnnonces();
+  ['annTitle', 'annMsg', 'annDate', 'annImage'].forEach(id => { $('#' + id).value = ''; });
+  $('#annMention').value = '';
+  updateAnnPreview();
+  const r = await sendAnnonce(item);
+  if (r === 'none') toast('✅ Annonce enregistrée (aucun webhook Annonces configuré).');
+  else if (r) toast('📢 Annonce enregistrée et envoyée sur Discord !');
+  else toast("⚠️ Annonce enregistrée, mais l'envoi Discord a échoué (vérifie l'URL du webhook Annonces).", false);
+});
+
+$('#annList').addEventListener('click', e => {
+  const b = e.target.closest('[data-delann]');
+  if (!b || !confirm('Supprimer cette annonce ?')) return;
+  const [gone] = annonces.splice(Number(b.dataset.delann), 1);
+  save(K.ann, annonces);
+  if (gone) cloud.write('DELETE', `annonces/${gone.id}`);
+  renderAnnonces();
+});
+
+$('#annCopy').addEventListener('click', () => {
+  const a = annData(), t = ANN[a.type] ?? ANN.info;
+  copyText(`${a.mention ? a.mention + '\n' : ''}**${annEmoji(t)} ${a.title || "Titre de l'annonce"}**\n\n${a.message || '...'}${a.when ? `\n\n🗓️ **${a.when}**` : ''}\n\n*Publié par ${a.dev}*`);
+});
 
 /* ---------- Synchronisation d'équipe (Firebase Realtime Database via REST) ---------- */
 function setSync(ok) {
@@ -1070,6 +1251,7 @@ function setSync(ok) {
 function renderAll() {
   renderSelect(); renderCatalogue(); renderPatches(); renderStats(); renderDevSelect(); applyBanner();
   if ($('#devDlg').open) renderDevList();
+  renderAnnonces(); updateAnnPreview();
   $('#bannerInput').value = raw.get(K.banner) || '';
   updatePreview();
 }
@@ -1099,7 +1281,7 @@ const cloud = {
   },
   stop() { clearInterval(this.timer); this.base = ''; this.sig = ''; setSync(null); },
   async seed() {
-    const body = { patchs: Object.fromEntries(patchs.map(p => [p.id, p])), devs: this.devMap(), assets: Object.fromEntries(custom.map(a => [hid(keyOf(a)), a])) };
+    const body = { patchs: Object.fromEntries(patchs.map(p => [p.id, p])), devs: this.devMap(), assets: Object.fromEntries(custom.map(a => [hid(keyOf(a)), a])), annonces: Object.fromEntries(annonces.map(a => [a.id, a])) };
     const b = raw.get(K.banner);
     if (b) body.banner = b;
     await this.req('PUT', '', body);
@@ -1118,8 +1300,9 @@ const cloud = {
       devs = Object.values(d.devs || {}).sort((a, b) => (a.ts || 0) - (b.ts || 0)).map(x => x.name);
       if (!devs.length) devs = [...DEFAULT_DEVS];
       custom = Object.values(d.assets || {}).filter(a => a && a.name);
+      annonces = Object.entries(d.annonces || {}).map(([id, a]) => ({ ...a, id })).sort((a, b) => (b.ts || 0) - (a.ts || 0));
       d.banner ? raw.set(K.banner, d.banner) : raw.del(K.banner);
-      save(K.patchs, patchs); save(K.devs, devs); save(K.custom, custom);
+      save(K.patchs, patchs); save(K.devs, devs); save(K.custom, custom); save(K.ann, annonces);
       rebuildAssets(); renderAll();
       const fresh = patchs.filter(p => !known.has(p.id)).length;
       if (!first && fresh) toast(`🔔 ${fresh} nouveau${fresh > 1 ? 'x' : ''} patch note${fresh > 1 ? 's' : ''} de l'équipe`);
@@ -1290,6 +1473,8 @@ $('#bannerInput').value = raw.get(K.banner) || '';
 rebuildAssets();
 applyBanner();
 renderDevSelect(); renderSelect(); renderCatalogue(); renderPatches(); renderStats(); renderBatch();
+$('#annHookInput').value = raw.get(K.annHook) || '';
+renderAnnonces(); updateAnnPreview();
 const syncUrl = raw.get(K.sync) || DEFAULT_SYNC.url;
 $('#syncUrl').value = syncUrl;
 $('#syncSpace').value = raw.get(K.space) || DEFAULT_SYNC.space;
